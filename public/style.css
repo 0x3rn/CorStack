@@ -174,17 +174,33 @@ section,
   justify-content: space-between;
   align-items: center;
 }
-.brand-logo a {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+.site-header {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    padding: 1rem 5%; background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.05);
 }
-.brand-logo svg {
-  color: var(--accent-primary);
+.navbar { display: flex; justify-content: space-between; align-items: center; }
+
+.brand-logo a { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem;
+    font-size: 1.5rem; 
+    font-weight: 800; 
+    letter-spacing: -0.04em; 
 }
+
+
+.nav-logo-img {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.nav-links { display: flex; align-items: center; gap: 2.5rem; font-weight: 600; font-size: 0.95rem; }
+.nav-links a:hover:not(.btn) { color: var(--accent-primary); }
+.nav-links .btn { padding: 0.8rem 1.8rem; font-size: 0.95rem; }
 .nav-links {
   display: flex;
   align-items: center;
@@ -625,9 +641,18 @@ section,
   gap: 3rem;
   padding: 6rem 5% 3rem 5%;
 }
-.footer-logo {
-  color: var(--white);
-  margin-bottom: 1rem;
+.footer-logo { 
+    color: var(--white); 
+    margin-bottom: 1rem; 
+    display: flex; 
+    align-items: center; 
+    gap: 0.75rem;
+}
+
+.footer-logo-img {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
 }
 .footer-heading {
   color: var(--white);
