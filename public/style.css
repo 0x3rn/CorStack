@@ -791,3 +791,33 @@ section,
     color: var(--accent-primary);
     border-bottom: 2px solid var(--accent-primary);
 }
+
+@media (min-width: 769px) {
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr; /* One column only */
+        gap: 1.5rem;
+    }
+
+    .hero-section[style*="min-height: 60vh;"] {
+        min-height: 40vh !important;
+        padding-top: 7rem;
+        padding-bottom: 3rem;
+    }
+
+    .feature-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    .card-title {
+        font-size: 1.2rem;
+    }
+}
