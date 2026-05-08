@@ -787,3 +787,7 @@ section,
     padding-top: 8rem;
   }
 }
+.nav-links a.active {
+    color: var(--accent-primary);
+    border-bottom: 2px solid var(--accent-primary);
+}
