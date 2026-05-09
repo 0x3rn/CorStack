@@ -631,6 +631,129 @@ section,
   margin-top: 0.5rem;
 }
 
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    max-width: 400px;
+    width: 90%;
+    box-shadow: var(--shadow-hover);
+    transform: translateY(20px);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.modal-content h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.modal-content p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.1);
+    font-family: inherit;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    outline: none;
+    transition: var(--transition);
+}
+
+.modal-content input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 4px rgba(0, 85, 204, 0.15);
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.modal-actions .btn {
+    flex: 1;
+    padding: 0.8rem 1.2rem;
+    font-size: 1rem;
+}
+
+/* =========================================
+   PREMIUM TOAST NOTIFICATIONS
+   ========================================= */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    padding: 1rem 1.5rem;
+    background: var(--brand-dark-card);
+    color: var(--white);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    font-size: 0.95rem;
+    font-weight: 600;
+    z-index: 9999;
+    transform: translateX(150%); /* Hidden off-screen */
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    pointer-events: none;
+    border-left: 4px solid var(--accent-primary);
+}
+
+.toast.show {
+    transform: translateX(0); /* Slide in */
+}
+
+.toast.error {
+    border-left-color: #EF4444; /* Red border for errors */
+}
+
+.toast.success {
+    border-left-color: #10B981; /* Green border for success */
+}
+
+/* On mobile, make the toast float at the top center instead */
+@media (max-width: 768px) {
+    .toast {
+        top: 20px;
+        bottom: auto;
+        right: 50%;
+        transform: translate(50%, -150%);
+        width: 90%;
+        text-align: center;
+    }
+    .toast.show {
+        transform: translate(50%, 0);
+    }
+}
+
 .site-footer {
   max-width: 100%;
   background: var(--brand-dark);
@@ -729,13 +852,26 @@ section,
   text-decoration: underline;
 }
 
+.nav-links a.active {
+    color: var(--accent-primary);
+    border-bottom: 2px solid var(--accent-primary);
+}
+
+@media (min-width: 769px) {
+    .features-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2.5rem;
+    }
+}
+
 @media (max-width: 1024px) {
-  .pricing-card.popular-tier {
-    transform: scale(1);
-  }
-  .pricing-card.popular-tier:hover {
-    transform: translateY(-8px);
-  }
+    .pricing-card.popular-tier {
+        transform: scale(1);
+    }
+    .pricing-card.popular-tier:hover {
+        transform: translateY(-8px);
+    }
 }
 
 @media (max-width: 768px) {
@@ -744,11 +880,17 @@ section,
     
     .hero-section { padding-top: 8rem; padding-bottom: 4rem; }
     .cta-section { padding: 5rem 5%; }
+
+    .hero-title { font-size: 2.5rem !important; line-height: 1.15; }
+    .section-title { font-size: 2rem !important; }
+    .cta-title { font-size: 2.2rem !important; }
+    .pricing-price { font-size: 2.5rem !important; }
+    .legal-section h1 { font-size: 2.2rem !important; }
+    
     .nav-links { 
         display: flex; 
         gap: 1rem;
     }
-    
 
     .nav-links li:nth-child(1),
     .nav-links li:nth-child(2),
@@ -765,45 +907,10 @@ section,
     }
   
     .problem-section { grid-template-columns: 1fr; }
-    
-    .hero-actions { flex-direction: column; width: 100%; max-width: 350px; margin-left: auto; margin-right: auto; }
-    .hero-actions .btn { width: 100%; }
 
-    .footer-bottom { flex-direction: column; text-align: center; justify-content: center; gap: 1.5rem; }
-    .footer-legal { justify-content: center; width: 100%; }
-}
-
-@media (max-width: 480px) {
-  .pricing-card {
-    padding: 2rem 1.5rem;
-  }
-  .hero-title {
-    font-size: 2.2rem;
-  }
-  .section-title {
-    font-size: 1.8rem;
-  }
-  .legal-section {
-    padding-top: 8rem;
-  }
-}
-.nav-links a.active {
-    color: var(--accent-primary);
-    border-bottom: 2px solid var(--accent-primary);
-}
-
-@media (min-width: 769px) {
     .features-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .features-grid {
-        display: grid;
-        grid-template-columns: 1fr; /* One column only */
+        grid-template-columns: 1fr;
         gap: 1.5rem;
     }
 
@@ -820,4 +927,29 @@ section,
     .card-title {
         font-size: 1.2rem;
     }
+    
+    .hero-actions { flex-direction: column; width: 100%; max-width: 350px; margin-left: auto; margin-right: auto; }
+    .hero-actions .btn { width: 100%; }
+
+    .footer-bottom { flex-direction: column; text-align: center; justify-content: center; gap: 1.5rem; }
+    .footer-legal { justify-content: center; width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .pricing-card {
+        padding: 2rem 1.5rem;
+    }
+    .legal-section {
+        padding-top: 8rem;
+    }
+    .nav-logo-img { 
+        height: 26px; 
+    }
+    
+    .hero-title { font-size: 2rem !important; line-height: 1.2; }
+    .section-title { font-size: 1.7rem !important; }
+    .cta-title { font-size: 1.8rem !important; }
+    .pricing-price { font-size: 2.2rem !important; }
+    .card-title { font-size: 1.15rem !important; }
+    .legal-section h1 { font-size: 1.8rem !important; }
 }

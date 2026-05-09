@@ -1,3 +1,17 @@
+// ==========================================
+// TOAST NOTIFICATION SYSTEM
+// ==========================================
+function showToast(message, type = 'error') {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.className = `toast show ${type}`;
+    
+    // Hide after 4 seconds
+    setTimeout(() => {
+        toast.className = 'toast';
+    }, 4000);
+}
+
 let currentCurrency = localStorage.getItem('agencyCurrency');
 
 const pricingData = {
@@ -45,23 +59,72 @@ function updatePricingDisplay() {
 
 document.addEventListener('DOMContentLoaded', detectLocationAndUpdatePricing);
 
-async function handleCheckout(tier) {
-    try {
-        const response = await fetch('/api/checkout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tier: tier, currency: currentCurrency || 'usd' })
-        });
+// ==========================================
+// 2. HANDLE PAYSTACK PAYMENTS (CUSTOM MODAL)
+// ==========================================
+let selectedTier = '';
+const checkoutModal = document.getElementById('checkout-modal');
+const checkoutEmailInput = document.getElementById('checkout-email');
+const confirmCheckoutBtn = document.getElementById('confirm-checkout');
+const cancelCheckoutBtn = document.getElementById('cancel-checkout');
+
+
+function handleCheckout(tier) {
+    selectedTier = tier;
+    checkoutModal.classList.add('active');
+    checkoutEmailInput.value = ''; // Clear previous input
+    checkoutEmailInput.focus();
+}
+
+if (cancelCheckoutBtn) {
+    cancelCheckoutBtn.addEventListener('click', () => {
+        checkoutModal.classList.remove('active');
+    });
+}
+
+if (confirmCheckoutBtn) {
+    confirmCheckoutBtn.addEventListener('click', async () => {
+        const userEmail = checkoutEmailInput.value.trim();
         
-        const session = await response.json();
-        
-        if(session.url) {
-            window.location.href = session.url;
+        if (!userEmail || !userEmail.includes('@')) {
+            showToast("Please enter a valid email address.", "error");
+            return;
         }
-    } catch (error) {
-        console.error("Payment failed to initiate:", error);
-        alert("Payment system currently unavailable.");
-    }
+
+        confirmCheckoutBtn.innerText = "Processing...";
+        confirmCheckoutBtn.style.pointerEvents = "none";
+
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    tier: selectedTier, 
+                    currency: currentCurrency || 'usd',
+                    email: userEmail 
+                })
+            });
+            
+            const session = await response.json();
+            
+            if(session.url) {
+                window.location.href = session.url;
+            } else {
+                showToast("Payment gateway unavailable right now.", "error");
+                resetModalBtn();
+            }
+        } catch (error) {
+            console.error("Payment failed to initiate:", error);
+            showToast("Payment system currently unavailable.", "error");
+            resetModalBtn();
+        }
+    });
+}
+
+function resetModalBtn() {
+    confirmCheckoutBtn.innerText = "Proceed";
+    confirmCheckoutBtn.style.pointerEvents = "auto";
+    checkoutModal.classList.remove('active');
 }
 
 const contactForm = document.getElementById('contact-form');
@@ -90,12 +153,12 @@ if(contactForm) {
             if(result.success) {
                 window.location.href = 'success.html';
             } else {
-                alert("Something went wrong. Please try again.");
+                showToast("Something went wrong. Please check your connection.", "error");
                 btn.innerText = "Send Message";
             }
         } catch (error) {
-            alert("Error connecting to server.");
+            showToast("Error connecting to server.", "error");
             btn.innerText = "Send Message";
-        } 
+        }
     });
 }

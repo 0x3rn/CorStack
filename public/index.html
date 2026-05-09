@@ -186,17 +186,17 @@
             
             <div class="portfolio-grid">
                 <article class="portfolio-card">
-                    <img src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&q=80&w=600" alt="Tech Consulting Firm">
+                    <img src="./hirehook.png" alt="Tech Consulting Firm">
                     <div class="portfolio-info">
                         <h4 class="portfolio-title">Tech Consulting Firm</h4>
-                        <p class="portfolio-category">Custom Web Design</p>
+                        <p class="portfolio-category">SaaS</p>
                     </div>
                 </article>
                 
                 <article class="portfolio-card">
-                    <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600" alt="Boutique Retailer">
+                    <img src="./omnimart.png" alt="Omnimart E-Commerce Site">
                     <div class="portfolio-info">
-                        <h4 class="portfolio-title">Boutique Retailer</h4>
+                        <h4 class="portfolio-title">Omnimart</h4>
                         <p class="portfolio-category">E-Commerce Setup</p>
                     </div>
                 </article>
@@ -210,9 +210,9 @@
                 </article>
             </div>
             
-            <div class="portfolio-action">
+            <!-- <div class="portfolio-action">
                 <a href="#portfolio" class="btn btn-outline-dark">View Full Portfolio</a>
-            </div>
+            </div> -->
         </section>
 
         <section id="contact" class="cta-section">
@@ -269,6 +269,20 @@
             </ul>
         </div>
     </footer>
+    <!-- CHECKOUT EMAIL MODAL -->
+    <div id="checkout-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Enter your email</h3>
+            <p>Where should we send your receipt and contact you for your project details?</p>
+            <input type="email" id="checkout-email" placeholder="Email address" required>
+            <div class="modal-actions">
+                <button id="cancel-checkout" class="btn btn-secondary">Cancel</button>
+                <button id="confirm-checkout" class="btn btn-primary">Proceed</button>
+            </div>
+        </div>
+    </div>
+    <!-- PREMIUM TOAST NOTIFICATION -->
+    <div id="toast" class="toast"></div>
     <script src="./script.js"></script>
 </body>
 </html>
