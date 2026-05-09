@@ -15,8 +15,8 @@ function showToast(message, type = 'error') {
 let currentCurrency = localStorage.getItem('agencyCurrency');
 
 const pricingData = {
-    usd: { symbol: '$', basic: 999, growth: 2499 },
-    ngn: { symbol: '₦', basic: 950000, growth: 1500000 }
+    usd: { symbol: '$', basic: 299, growth: 599 },
+    ngn: { symbol: '₦', basic: 350000, growth: 600000 }
 };
 
 async function detectLocationAndUpdatePricing() {
@@ -163,10 +163,6 @@ if(contactForm) {
     });
 }
 
-// ==========================================
-// 4. FIX "STUCK ON PROCESSING" BACK-BUTTON BUG
-// ==========================================
-// This detects if the user came back to the page from Paystack (via bfcache)
 window.addEventListener('pageshow', (event) => {
     
     // 1. Instantly reset the Proceed button
