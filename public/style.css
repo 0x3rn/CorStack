@@ -953,3 +953,18 @@ section,
     .card-title { font-size: 1.15rem !important; }
     .legal-section h1 { font-size: 1.8rem !important; }
 }
+
+
+@media (max-width: 768px) {
+    .toast {
+        top: 20px;
+        bottom: auto;
+        right: 50%;
+        transform: translate(50%, -200px); 
+        width: 90%;
+        text-align: center;
+    }
+    .toast.show {
+        transform: translate(50%, 0);
+    }
+}
