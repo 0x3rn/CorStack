@@ -162,3 +162,28 @@ if(contactForm) {
         }
     });
 }
+
+// ==========================================
+// 4. FIX "STUCK ON PROCESSING" BACK-BUTTON BUG
+// ==========================================
+// This detects if the user came back to the page from Paystack (via bfcache)
+window.addEventListener('pageshow', (event) => {
+    
+    // 1. Instantly reset the Proceed button
+    const confirmBtn = document.getElementById('confirm-checkout');
+    if(confirmBtn) {
+        confirmBtn.innerText = "Proceed";
+        confirmBtn.style.pointerEvents = "auto";
+    }
+    
+    // 2. Hide the email modal
+    const modal = document.getElementById('checkout-modal');
+    if(modal) {
+        modal.classList.remove('active');
+    }
+
+    // 3. If the page was loaded from history/cache, force a fresh reload
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
