@@ -2,16 +2,16 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
-const axios = require('axios'); // NEW: Using Axios for Paystack
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public')); 
 
-// ==========================================
+
 // 1. CONTACT FORM EMAIL SERVER
-// ==========================================
+
 app.post('/api/contact', async (req, res) => {
     const { name, email, message } = req.body;
 
@@ -27,7 +27,7 @@ app.post('/api/contact', async (req, res) => {
         await transporter.sendMail({
             from: `"${name}" <${email}>`,
             to: process.env.EMAIL_USER, 
-            subject: "New Agency Lead from CorStack", // Updated to CorStack
+            subject: "New Agency Lead from CorStack", 
             text: `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`
         });
         res.status(200).json({ success: true, message: "Message sent successfully!" });
@@ -37,24 +37,24 @@ app.post('/api/contact', async (req, res) => {
     }
 });
 
-// ==========================================
+
 // 2. PAYSTACK CHECKOUT PAYMENTS
-// ==========================================
 app.post('/api/checkout', async (req, res) => {
     const { tier, currency, email } = req.body; 
     
-    // Dynamically grab the website URL (works for localhost AND Vercel)
     const domainURL = req.headers.origin || `http://${req.headers.host}`;
     
     let priceAmount;
     let packageName;
 
+    // BUG FIX: Paystack requires amounts in Kobo (NGN) and Cents (USD). 
+    // MUST add 00 to the end of the numbers, otherwise I will only charge ₦3,500!
     if (currency === 'ngn') {
-        if (tier === 'basic') { priceAmount = 95000000; packageName = "Basic Website Package"; }
-        if (tier === 'growth') { priceAmount = 150000000; packageName = "Business Growth Package"; }
+        if (tier === 'basic') { priceAmount = 35000000; packageName = "Basic Package"; }
+        if (tier === 'growth') { priceAmount = 60000000; packageName = "Business Package"; }
     } else {
-        if (tier === 'basic') { priceAmount = 99900; packageName = "Basic Website Package"; }
-        if (tier === 'growth') { priceAmount = 249900; packageName = "Business Growth Package"; }
+        if (tier === 'basic') { priceAmount = 29900; packageName = "Basic Package"; }
+        if (tier === 'growth') { priceAmount = 59900; packageName = "Business Package"; }
     }
 
     try {
@@ -64,7 +64,7 @@ app.post('/api/checkout', async (req, res) => {
                 email: email, 
                 amount: priceAmount,
                 currency: currency.toUpperCase(), 
-                callback_url: `${domainURL}/paymentSuccess.html`, // Now completely dynamic!
+                callback_url: `${domainURL}/paymentSuccess.html`,
                 metadata: {
                     custom_fields:[
                         { display_name: "Package Purchased", variable_name: "package", value: packageName }
@@ -82,8 +82,15 @@ app.post('/api/checkout', async (req, res) => {
         res.json({ url: paystackResponse.data.data.authorization_url });
         
     } catch (error) {
-        console.error("Paystack Error:", error.response ? error.response.data : error.message);
-        res.status(500).json({ error: "Failed to initialize Paystack checkout." });
+        // Extract the EXACT error message from Paystack, or use a default fallback if Paystack is completely offline
+        const errorMessage = error.response && error.response.data && error.response.data.message 
+            ? error.response.data.message 
+            : "The payment gateway is currently offline. Please try again later.";
+
+        console.error("Paystack Error:", errorMessage);
+        
+        // Send the specific error message back to the frontend
+        res.status(400).json({ error: errorMessage });
     }
 });
 

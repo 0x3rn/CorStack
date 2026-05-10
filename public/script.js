@@ -1,19 +1,23 @@
-// ==========================================
+
 // TOAST NOTIFICATION SYSTEM
-// ==========================================
+
 function showToast(message, type = 'error') {
     const toast = document.getElementById('toast');
     toast.innerText = message;
     toast.className = `toast show ${type}`;
     
-    // Hide after 4 seconds
     setTimeout(() => {
         toast.className = 'toast';
     }, 4000);
 }
 
+
+// 1. DYNAMIC GEOLOCATION PRICING
+
 let currentCurrency = localStorage.getItem('agencyCurrency');
 
+// BUG FIX: The basic/growth values here MUST be the display values, not the backend Kobo/Cents
+// Using 29900 here made the HTML display "$29,900". Changed to 299.
 const pricingData = {
     usd: { symbol: '$', basic: 299, growth: 599 },
     ngn: { symbol: '₦', basic: 350000, growth: 600000 }
@@ -27,7 +31,6 @@ async function detectLocationAndUpdatePricing() {
 
     try {
         const response = await fetch('https://ipapi.co/json/');
-        
         if (!response.ok) throw new Error("Rate limited"); 
         
         const data = await response.json();
@@ -59,20 +62,20 @@ function updatePricingDisplay() {
 
 document.addEventListener('DOMContentLoaded', detectLocationAndUpdatePricing);
 
-// ==========================================
+
 // 2. HANDLE PAYSTACK PAYMENTS (CUSTOM MODAL)
-// ==========================================
+
 let selectedTier = '';
 const checkoutModal = document.getElementById('checkout-modal');
 const checkoutEmailInput = document.getElementById('checkout-email');
 const confirmCheckoutBtn = document.getElementById('confirm-checkout');
 const cancelCheckoutBtn = document.getElementById('cancel-checkout');
-
+const checkoutForm = document.getElementById('checkout-form');
 
 function handleCheckout(tier) {
     selectedTier = tier;
     checkoutModal.classList.add('active');
-    checkoutEmailInput.value = ''; // Clear previous input
+    checkoutEmailInput.value = ''; 
     checkoutEmailInput.focus();
 }
 
@@ -82,8 +85,12 @@ if (cancelCheckoutBtn) {
     });
 }
 
-if (confirmCheckoutBtn) {
-    confirmCheckoutBtn.addEventListener('click', async () => {
+// BUG FIX: Listen to the FORM submit, not the button click. This stops the ghost-click bug on mobile
+// Listen to the FORM submit, not the button click.
+if (checkoutForm) {
+    checkoutForm.addEventListener('submit', async (e) => {
+        e.preventDefault(); 
+        
         const userEmail = checkoutEmailInput.value.trim();
         
         if (!userEmail || !userEmail.includes('@')) {
@@ -105,17 +112,21 @@ if (confirmCheckoutBtn) {
                 })
             });
             
-            const session = await response.json();
+            const result = await response.json();
             
-            if(session.url) {
-                window.location.href = session.url;
+            // If the response is successful and has a URL, redirect to Paystack
+            if(response.ok && result.url) {
+                window.location.href = result.url;
             } else {
-                showToast("Payment gateway unavailable right now.", "error");
+                // Display the EXACT error sent from Paystack (e.g., "Invalid email") 
+                // OR display the fallback server-down message.
+                showToast(result.error || "Payment gateway is currently down.", "error");
                 resetModalBtn();
             }
         } catch (error) {
-            console.error("Payment failed to initiate:", error);
-            showToast("Payment system currently unavailable.", "error");
+            // This runs if the user's internet disconnects or Node server crashes completely
+            console.error("Checkout Request Failed:", error);
+            showToast("Connection failed. Please check your internet and try again.", "error");
             resetModalBtn();
         }
     });
@@ -126,6 +137,9 @@ function resetModalBtn() {
     confirmCheckoutBtn.style.pointerEvents = "auto";
     checkoutModal.classList.remove('active');
 }
+
+
+// 3. HANDLE CONTACT FORM
 
 const contactForm = document.getElementById('contact-form');
 
@@ -163,61 +177,59 @@ if(contactForm) {
     });
 }
 
+
+// 4. FIX "STUCK ON PROCESSING" BACK-BUTTON BUG
+
 window.addEventListener('pageshow', (event) => {
-    
-    // 1. Instantly reset the Proceed button
     const confirmBtn = document.getElementById('confirm-checkout');
     if(confirmBtn) {
         confirmBtn.innerText = "Proceed";
         confirmBtn.style.pointerEvents = "auto";
     }
     
-    // 2. Hide the email modal
     const modal = document.getElementById('checkout-modal');
     if(modal) {
         modal.classList.remove('active');
     }
 
-    // 3. If the page was loaded from history/cache, force a fresh reload
     if (event.persisted) {
         window.location.reload();
     }
 });
 
-// ==========================================
-// 5. BARBA.JS SMOOTH PAGE TRANSITIONS
-// ==========================================
 
-// 1. Wrap your existing startup logic in a function
+// 5. BARBA.JS SMOOTH PAGE TRANSITIONS
+
+
 function initPageLogic() {
-    detectLocationAndUpdatePricing(); // Refresh dynamic prices
+    detectLocationAndUpdatePricing(); 
     
-    // Re-attach contact form listener if the form exists on the new page
-    const contactForm = document.getElementById('contact-form');
-    if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
-            // ... (your existing form submission code will naturally work here) ...
+    // Smooth scrolling for Anchor Links (Prevents Barba conflict)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if(target) target.scrollIntoView({ behavior: 'smooth' });
         });
-    }
+    });
 }
 
-// 2. Initialize Barba
 barba.init({
+    // Tell Barba to ignore anchor links (like #pricing) so it doesn't break
+    prevent: ({ el }) => el.hasAttribute('href') && el.getAttribute('href').startsWith('#'),
     transitions:[{
         name: 'opacity-transition',
-        // When leaving the current page: Fade it out
         leave(data) {
             return gsap.to(data.current.container, {
                 opacity: 0,
                 duration: 0.5
             });
         },
-        // When entering the new page: Fade it in and slide up slightly
         enter(data) {
-            window.scrollTo(0, 0); // Force scroll to top of new page
+            window.scrollTo(0, 0); 
             return gsap.from(data.next.container, {
                 opacity: 0,
-                y: 20, // Slide up effect
+                y: 20, 
                 duration: 0.4,
                 ease: "power2.out"
             });
@@ -225,7 +237,9 @@ barba.init({
     }]
 });
 
-// 3. Tell Barba to re-run your logic every time a new page fades in
 barba.hooks.afterEnter(() => {
     initPageLogic();
 });
+
+// Run logic on initial load
+initPageLogic();
