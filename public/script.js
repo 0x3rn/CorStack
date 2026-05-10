@@ -183,3 +183,49 @@ window.addEventListener('pageshow', (event) => {
         window.location.reload();
     }
 });
+
+// ==========================================
+// 5. BARBA.JS SMOOTH PAGE TRANSITIONS
+// ==========================================
+
+// 1. Wrap your existing startup logic in a function
+function initPageLogic() {
+    detectLocationAndUpdatePricing(); // Refresh dynamic prices
+    
+    // Re-attach contact form listener if the form exists on the new page
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            // ... (your existing form submission code will naturally work here) ...
+        });
+    }
+}
+
+// 2. Initialize Barba
+barba.init({
+    transitions:[{
+        name: 'opacity-transition',
+        // When leaving the current page: Fade it out
+        leave(data) {
+            return gsap.to(data.current.container, {
+                opacity: 0,
+                duration: 0.5
+            });
+        },
+        // When entering the new page: Fade it in and slide up slightly
+        enter(data) {
+            window.scrollTo(0, 0); // Force scroll to top of new page
+            return gsap.from(data.next.container, {
+                opacity: 0,
+                y: 20, // Slide up effect
+                duration: 0.4,
+                ease: "power2.out"
+            });
+        }
+    }]
+});
+
+// 3. Tell Barba to re-run your logic every time a new page fades in
+barba.hooks.afterEnter(() => {
+    initPageLogic();
+});

@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="logo.png">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-barba="wrapper">
     <header class="site-header">
         <nav class="navbar">
             <div class="brand-logo">
@@ -25,7 +25,7 @@
         </nav>
     </header>
 
-    <main>
+    <main data-barba="container" data-barba-namespace="terms">
         <section class="legal-section">
             <h1>Terms of Service</h1>
             <p class="last-updated">Last Updated: May 8, 2026</p>
@@ -87,5 +87,8 @@
             </ul>
         </div>
     </footer>
+    <script src="https://unpkg.com/@barba/core"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

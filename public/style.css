@@ -44,6 +44,8 @@ body {
   overflow-x: hidden;
 }
 
+a, button { outline: none; -webkit-tap-highlight-color: transparent; }
+
 img,
 svg {
   max-width: 100%;
@@ -610,11 +612,15 @@ section,
   color: var(--white);
   font-family: inherit;
   font-size: 1rem;
+  resize:none;
   outline: none;
   transition: var(--transition);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
+.contact-form textarea {
+  height: 150px;
+}
 .contact-form input::placeholder,
 .contact-form textarea::placeholder {
   color: rgba(255, 255, 255, 0.6);
