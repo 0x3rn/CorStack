@@ -200,46 +200,105 @@ window.addEventListener('pageshow', (event) => {
 
 // 5. BARBA.JS SMOOTH PAGE TRANSITIONS
 
-
 function initPageLogic() {
     detectLocationAndUpdatePricing(); 
     
-    // Smooth scrolling for Anchor Links (Prevents Barba conflict)
+    // CUSTOM PREMIUM SMOOTH SCROLL FOR ANCHOR LINKS
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if(target) target.scrollIntoView({ behavior: 'smooth' });
+            const targetId = this.getAttribute('href');
+            if (targetId === '#') return;
+            
+            const target = document.querySelector(targetId);
+            if(target) {
+                // 1. Calculate where to scroll (subtracting 80px so the sticky navbar doesn't cover the title)
+                const headerOffset = 80;
+                const elementPosition = target.getBoundingClientRect().top;
+                const startPosition = window.pageYOffset;
+                const distance = elementPosition - headerOffset;
+                
+                // 2. Set the speed (1000 = 1 full second. Change to 1200 for even slower)
+                const duration = 1000; 
+                let startTime = null;
+
+                // 3. The Custom "Cinematic" Easing Math
+                function animation(currentTime) {
+                    if (startTime === null) startTime = currentTime;
+                    const timeElapsed = currentTime - startTime;
+                    
+                    let t = timeElapsed / duration;
+                    if (t > 1) t = 1;
+                    
+                    // 'easeInOutCubic' Easing - Starts slow, fast in the middle, glides to a stop
+                    let ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+                    
+                    window.scrollTo(0, startPosition + (distance * ease));
+                    
+                    if (timeElapsed < duration) {
+                        requestAnimationFrame(animation);
+                    }
+                }
+                requestAnimationFrame(animation);
+            }
         });
     });
 }
 
-barba.init({
-    // Tell Barba to ignore anchor links (like #pricing) so it doesn't break
-    prevent: ({ el }) => el.hasAttribute('href') && el.getAttribute('href').startsWith('#'),
-    transitions:[{
-        name: 'opacity-transition',
-        leave(data) {
-            return gsap.to(data.current.container, {
-                opacity: 0,
-                duration: 0.5
-            });
-        },
-        enter(data) {
-            window.scrollTo(0, 0); 
-            return gsap.from(data.next.container, {
-                opacity: 0,
-                y: 20, 
-                duration: 0.4,
-                ease: "power2.out"
-            });
+
+// 6. LENIS MOMENTUM SCROLL & GSAP REVEALS
+
+// Register ScrollTrigger with GSAP
+gsap.registerPlugin(ScrollTrigger);
+
+// Initialize Lenis Momentum Scroll
+const lenis = new Lenis({
+    duration: 1.2, 
+    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smooth: true,
+});
+
+// Sync Lenis with GSAP ScrollTrigger
+lenis.on('scroll', ScrollTrigger.update);
+gsap.ticker.add((time) => { lenis.raf(time * 1000); });
+gsap.ticker.lagSmoothing(0);
+
+// Animate elements floating up as you scroll
+const elementsToAnimate = document.querySelectorAll('.feature-card, .pricing-card, .portfolio-card, .step-item, .section-title');
+elementsToAnimate.forEach((el) => {
+    gsap.fromTo(el, 
+        { opacity: 0, y: 40 }, 
+        {
+            opacity: 1, 
+            y: 0, 
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+                trigger: el,
+                start: "top 85%", 
+                toggleActions: "play none none none" 
+            }
         }
-    }]
+    );
 });
 
-barba.hooks.afterEnter(() => {
-    initPageLogic();
+// Custom Smooth Scroll for Anchor Links (Powered by Lenis)
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if (targetId === '#') return;
+        
+        // Lenis smooth scrolls and accounts for navbar offset!
+        lenis.scrollTo(targetId, { offset: -80, duration: 1.5 });
+    });
 });
 
-// Run logic on initial load
-initPageLogic();
+// Fix: If a user clicks a link from services.html back to index.html#pricing, offset the scroll properly
+window.addEventListener('load', () => {
+    if (window.location.hash) {
+        setTimeout(() => {
+            lenis.scrollTo(window.location.hash, { offset: -80, immediate: true });
+        }, 100);
+    }
+});

@@ -32,7 +32,6 @@
 }
 
 html {
-  scroll-behavior: smooth;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: var(--text-main);
   background-color: var(--bg-light);
@@ -228,7 +227,7 @@ section,
   padding-top: 8rem;
 }
 .hero-eyebrow {
-  background: var(--accent-secondary);
+  background: var(--accent-primary);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -969,3 +968,9 @@ section,
         transform: translate(50%, 0);
     }
 }
+
+html.lenis { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-scrolling iframe { pointer-events: none; }
