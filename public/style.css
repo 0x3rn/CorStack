@@ -645,12 +645,14 @@ section,
     align-items: center;
     z-index: 2000;
     opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, visibilty 0.3s;
 }
 
 .modal-overlay.active {
     opacity: 1;
+    visibility: visible;
     pointer-events: all;
 }
 
