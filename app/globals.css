@@ -474,7 +474,7 @@
     @apply border-l-[#10B981];
   }
 
-  /* Legal Sections (Privacy & Terms); */
+  /* Legal Sections (Privacy & Terms) */
   .legal-section {
     @apply pt-40 pb-24 max-w-[800px] mx-auto bg-white;
   }
