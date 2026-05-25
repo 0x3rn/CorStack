@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SmoothScroll from '../components/SmoothScroll';
 import { Toaster } from 'react-hot-toast';
+import NextTopLoader from 'nextjs-toploader';
 
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -29,6 +30,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
       <body>
+        <NextTopLoader 
+          color="#0055cc" 
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          showSpinner={false} 
+          shadow="0 0 10px #0055cc, 0 0 5px #0055cc" 
+        />
         <Toaster 
           position="bottom-right"
           toastOptions={{

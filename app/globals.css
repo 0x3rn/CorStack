@@ -476,7 +476,9 @@
 
   /* Legal Sections (Privacy & Terms) */
   .legal-section {
-    @apply pt-40 pb-24 max-w-[800px] mx-auto bg-white;
+    @apply max-w-[800px] mx-auto bg-white;
+    padding-top: 7rem !important;
+    padding-bottom: 5rem !important;
   }
 
   .legal-section h1 {
@@ -591,6 +593,10 @@
     .pricing-price {
       @apply !text-[2.5rem];
     }
+    .legal-section {
+    padding-top: 6rem !important;
+    padding-bottom: 4rem !important;
+    }
     .legal-section h1 {
       @apply !text-[2.2rem];
     }
@@ -660,7 +666,8 @@
       @apply py-8 px-6;
     }
     .legal-section {
-      @apply pt-32;
+      padding-top: 5rem !important;
+      padding-bottom: 3rem !important;
     }
     .nav-logo-img {
       @apply h-[26px];
