@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ReactLenis } from "@studio-freight/react-lenis";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
@@ -7,6 +7,8 @@ import ScrollTrigger from "gsap/ScrollTrigger";
 gsap.registerPlugin(ScrollTrigger);
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
+  const lenisRef = useRef<any>(null);
+
   useEffect(() => {
     const elementsToAnimate = document.querySelectorAll(
       ".feature-card, .pricing-card, .portfolio-card, .step-item, .section-title"
@@ -30,13 +32,37 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       );
     });
 
+    const handleAnchorClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest("a") as HTMLAnchorElement | null;
+
+      if (anchor && anchor.hash && anchor.hash !== "") {
+        const isLocal =
+          anchor.origin === window.location.origin &&
+          anchor.pathname === window.location.pathname;
+
+        if (isLocal) {
+          e.preventDefault();
+          
+          lenisRef.current?.lenis?.scrollTo(anchor.hash, {
+            offset: -80,
+            duration: 2.5,
+            easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          });
+        }
+      }
+    };
+
+    document.addEventListener("click", handleAnchorClick);
+
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
+      document.removeEventListener("click", handleAnchorClick);
     };
   }, []);
 
   return (
-    <ReactLenis root options={{ lerp: 0.08, duration: 1.5, smoothWheel: true }}>
+    <ReactLenis root ref={lenisRef} options={{ lerp: 0.08, smoothWheel: true }}>
       {children as any}
     </ReactLenis>
   );
