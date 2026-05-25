@@ -168,7 +168,7 @@ export default function HomePage() {
             If these packages offer more than you currently need, or if you just want a streamlined 1 to 3-page website, we&apos;ve got you covered. This is perfect for <strong>personal portfolios/digital resumes, single landing pages, local business &ldquo;brochures&rdquo;, or coming-soon waitlists.</strong> We can build a high-quality, scaled-down solution that perfectly fits your current budget.
             
             <span style={{ display: 'block', marginTop: '1.5rem' }}>
-              <Link href="#contact" style={{ color: 'var(--accent-primary)', fontWeight: 700, textDecoration: 'underline' }}>Get a budget-friendly custom quote &rarr;</Link>
+              <Link href="#contact" className="text-accent-primary" style={{fontWeight: 700, textDecoration: 'underline' }}>Get a budget-friendly custom quote &rarr;</Link>
             </span>
           </p>
         </div>

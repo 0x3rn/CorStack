@@ -92,7 +92,7 @@
   }
 
   .btn-secondary {
-    @apply bg-bg-light text-text-main border border-black/10 hover:bg-text-main hover:text-white;
+    @apply bg-bg-light text-text-main border border-solid border-black/20 hover:bg-text-main hover:text-white;
   }
 
   .btn-outline-dark {
@@ -142,7 +142,7 @@
   }
 
   .hero-eyebrow {
-    @apply bg-brand-gradient bg-clip-text text-transparent font-extrabold tracking-[0.1em] text-[0.85rem] uppercase mb-6;
+    @apply bg-accent-primary bg-clip-text text-transparent font-extrabold tracking-[0.1em] text-[0.85rem] uppercase mb-6;
     -webkit-background-clip: text;
   }
 
@@ -335,7 +335,7 @@
   }
 
   .badge {
-    @apply absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-gradient text-white py-2 px-6 rounded-btn text-[0.8rem] font-extrabold tracking-wider uppercase whitespace-nowrap;
+    @apply absolute -top-4 left-1/2 -translate-x-1/2 bg-accent-primary text-white py-2 px-6 rounded-btn text-[0.8rem] font-extrabold tracking-wider uppercase whitespace-nowrap;
   }
 
   .popular-tier .pricing-name,
