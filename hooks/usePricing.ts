@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 
 export const pricingData = {
-  usd: { symbol: "$", basic: 299, growth: 599 },
-  ngn: { symbol: "₦", basic: 350000, growth: 600000 },
+  usd: { symbol: "$", basic: 300, growth: 600 },
+  ngn: { symbol: "₦", basic: 350000, growth: 650000 },
 };
 
 export function usePricing() {
@@ -20,6 +20,7 @@ export function usePricing() {
       }
 
       try {
+        const startTime = Date.now();
         const response = await fetch("https://ipapi.co/json/");
         if (!response.ok) throw new Error("Rate limited");
         const data = await response.json();
@@ -27,6 +28,11 @@ export function usePricing() {
         const detected = data.country === "NG" ? "ngn" : "usd";
         setCurrency(detected);
         localStorage.setItem("agencyCurrency", detected);
+
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 1500) {
+          await new Promise(resolve => setTimeout(resolve, 1500 - elapsed));
+        }
       } catch (error) {
         setCurrency("usd");
       } finally {

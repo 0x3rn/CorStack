@@ -143,7 +143,6 @@
 
   .hero-eyebrow {
     @apply bg-accent-primary bg-clip-text text-transparent font-extrabold tracking-[0.1em] text-[0.85rem] uppercase mb-6;
-    -webkit-background-clip: text;
   }
 
   .hero-title {

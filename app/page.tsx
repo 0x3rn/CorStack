@@ -111,8 +111,13 @@ export default function HomePage() {
             <h3 className="pricing-name">Standard Package</h3>
             <p className="pricing-desc">Ideal for startups and local shops needing a professional online presence.</p>
             <h4 id="price-basic" className="pricing-price">
-              {isLoaded ? `${pricing.symbol}${pricing.basic.toLocaleString()}` : "$299"} 
-              <span>/one-time</span>
+              {isLoaded ? (
+                <>
+                  {pricing.symbol}{pricing.basic.toLocaleString()} <span>/one-time</span>
+                </>
+              ) : (
+                <span className="block h-[48px] w-[180px] bg-black/10 animate-pulse rounded-md"></span>
+              )}
             </h4>
             <ul className="pricing-features">
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Up to 5 Custom Pages</li>
@@ -121,9 +126,13 @@ export default function HomePage() {
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Contact Form Integration</li>
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 1 Round of Revisions</li>
             </ul>
-            <button onClick={() => handleBuyClick('basic')} className="btn btn-secondary block-btn">
-              Choose Standard
-            </button>
+            {isLoaded ? (
+              <button onClick={() => handleBuyClick('basic')} className="btn btn-secondary block-btn">
+                Choose Standard
+              </button>
+            ) : (
+              <div className="h-[64px] w-full bg-black/10 animate-pulse rounded-btn"></div>
+            )}
           </article>
 
           <article className="pricing-card popular-tier">
@@ -131,8 +140,13 @@ export default function HomePage() {
             <h3 className="pricing-name">Premium Package</h3>
             <p className="pricing-desc">For growing businesses that need more pages and lead generation tools.</p>
             <h4 id="price-growth" className="pricing-price">
-              {isLoaded ? `${pricing.symbol}${pricing.growth.toLocaleString()}` : "$599"} 
-              <span>/one-time</span>
+              {isLoaded ? (
+                <>
+                  {pricing.symbol}{pricing.growth.toLocaleString()} <span>/one-time</span>
+                </>
+              ) : (
+                <span className="block h-[48px] w-[180px] bg-white/20 animate-pulse rounded-md"></span>
+              )}
             </h4>
             <ul className="pricing-features">
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Up to 10 Custom Pages</li>
@@ -141,9 +155,13 @@ export default function HomePage() {
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Google Analytics Setup</li>
               <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> 3 Rounds of Revisions</li>
             </ul>
-            <button onClick={() => handleBuyClick('growth')} className="btn btn-primary block-btn inverse-btn">
-              Choose Premium
-            </button>
+            {isLoaded ? (
+              <button onClick={() => handleBuyClick('growth')} className="btn btn-primary block-btn inverse-btn">
+                Choose Premium
+              </button>
+            ) : (
+              <div className="h-[64px] w-full bg-white/20 animate-pulse rounded-btn"></div>
+            )}
           </article>
 
           <article className="pricing-card">
