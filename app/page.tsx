@@ -113,7 +113,7 @@ export default function HomePage() {
                 <span><strong>Your website not reflecting the quality of your work/brand.</strong></span>
               </li>
             </ul>
-            <p className="strong-text text-left" style={{ marginTop: '1rem' }}>Let&apos;s build a reliable foundation for your online presence.</p>
+            <p className="strong-text text-center w-full" style={{ marginTop: '2rem' }}>Let&apos;s build a reliable foundation for your online presence.</p>
           </div>
         </div>
       </section>
