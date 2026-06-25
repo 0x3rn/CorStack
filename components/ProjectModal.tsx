@@ -182,7 +182,18 @@ ${formData.description}
                 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2 ml-1">Project Budget ({currency === 'ngn' ? '₦' : '$'}) *</label>
-                  <input type="number" min="0" required className={inputClass} placeholder={currency === 'ngn' ? "e.g. 500000" : "e.g. 2000"} value={formData.budget} onChange={(e) => setFormData({...formData, budget: e.target.value})} />
+                  <input 
+                    type="text" 
+                    required 
+                    className={inputClass} 
+                    placeholder={currency === 'ngn' ? "e.g. 500,000" : "e.g. 2,000"} 
+                    value={formData.budget} 
+                    onChange={(e) => {
+                      const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                      const formattedValue = numericValue ? Number(numericValue).toLocaleString('en-US') : '';
+                      setFormData({...formData, budget: formattedValue});
+                    }} 
+                  />
                 </div>
               </div>
 

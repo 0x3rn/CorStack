@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
-      <body>
+      <body className="overflow-x-hidden max-w-[100vw]">
         <NextTopLoader 
           color="#0055cc" 
           initialPosition={0.08}
@@ -66,9 +66,11 @@ export default function RootLayout({
           }}
         />
         <SmoothScroll>
-          <Header />
-          {children}
-          <Footer />
+          <div className="flex flex-col min-h-screen overflow-x-hidden w-full max-w-[100vw]">
+            <Header />
+            {children}
+            <Footer />
+          </div>
         </SmoothScroll>
       </body>
       {/* Google Analytics */}
