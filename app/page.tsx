@@ -47,7 +47,7 @@ export default function HomePage() {
           <p className="section-subtitle">Whether you&apos;re launching a startup, growing a personal brand, running an organization, selling products online, or upgrading an existing presence, your website should represent you professionally and help you achieve your goals. We build digital experiences tailored to your goals.</p>
         </div>
         
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1400px] mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1400px] mx-auto">
           <article className="feature-card">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
             <h3 className="card-title">Startups</h3>
@@ -87,35 +87,34 @@ export default function HomePage() {
       </section>
 
       <section id="problem" className="problem-section">
-        <div className="problem-content">
-          <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>The Problem</span>
-          <h2 className="section-title">Your website should be working for you</h2>
-          <p className="section-text">
-            Many websites fail to deliver meaningful results. They look outdated, perform poorly on mobile devices, or make it difficult for visitors to take action. A website should be one of your most valuable digital assests. <br/>Here are common issues we fix:
-          </p>
-          
-          <ul className="problem-list">
-            <li>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              <span><strong>Slow loading speeds & Outdated design:</strong> Visitors land on your site but leave without contacting you.</span>
-            </li>
-            <li>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              <span><strong>Poor mobile design & experience:</strong> Hard to read, click, or navigate on smartphones.</span>
-            </li>
-            <li>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              <span><strong>Low visibility on search engines:</strong> Buried on page 5 of search results where no potential clients are looking.</span>
-            </li>
-            <li>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              <span><strong>Your website not reflecting the quality of your work/brand.</strong></span>
-            </li>
-          </ul>
-          <p className="strong-text">Let&apos;s build a reliable foundation for your online presence.</p>
-        </div>
-        <div className="problem-image">
-          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=800" alt="Website Analytics Problem" />
+        <div className="problem-content max-w-[800px] mx-auto flex flex-col items-center">
+          <span className="hero-eyebrow text-center w-full" style={{ display: 'block', marginBottom: '1rem' }}>The Problem</span>
+          <h2 className="section-title text-center w-full" style={{ marginLeft: 0 }}>Your website should be working for you</h2>
+          <div className="w-full">
+            <p className="section-text text-left" style={{ marginTop: '1rem' }}>
+              Many websites fail to deliver meaningful results. They look outdated, perform poorly on mobile devices, or make it difficult for visitors to take action. A website should be one of your most valuable digital assets. <br/>Here are common issues we fix:
+            </p>
+            
+            <ul className="problem-list" style={{ marginTop: '1rem' }}>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span><strong>Slow loading speeds & Outdated design:</strong> Visitors land on your site but leave without contacting you.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span><strong>Poor mobile design & experience:</strong> Hard to read, click, or navigate on smartphones.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span><strong>Low visibility on search engines:</strong> Buried on page 5 of search results where no potential clients are looking.</span>
+              </li>
+              <li>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <span><strong>Your website not reflecting the quality of your work/brand.</strong></span>
+              </li>
+            </ul>
+            <p className="strong-text text-left" style={{ marginTop: '1rem' }}>Let&apos;s build a reliable foundation for your online presence.</p>
+          </div>
         </div>
       </section>
 

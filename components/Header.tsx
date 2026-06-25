@@ -1,6 +1,16 @@
+"use client";
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
+  const pathname = usePathname();
+
+  // Don't show the main header on admin routes
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <header className="site-header">
       <nav className="navbar">
