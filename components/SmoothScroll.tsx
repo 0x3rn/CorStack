@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { ReactLenis } from "@studio-freight/react-lenis";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 
@@ -8,8 +9,11 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<any>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
+    if (pathname?.startsWith("/admin")) return;
+
     const elementsToAnimate = document.querySelectorAll(
       ".feature-card, .pricing-card, .portfolio-card, .step-item, .section-title"
     );
@@ -60,6 +64,10 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
       document.removeEventListener("click", handleAnchorClick);
     };
   }, []);
+
+  if (pathname?.startsWith("/admin")) {
+    return <>{children}</>;
+  }
 
   return (
     <ReactLenis root ref={lenisRef} options={{ lerp: 0.08, smoothWheel: true }}>

@@ -178,25 +178,32 @@ export default function AdminPortfolioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-1">Image</label>
-            <div className="flex gap-4 items-center">
+            <label className="block text-sm font-semibold mb-2">Portfolio Image</label>
+            <div className="flex gap-4 items-start">
               {currentItem.imageUrl && (
-                <img src={currentItem.imageUrl} alt="Preview" className="w-20 h-20 object-cover rounded-lg border border-black/10" />
+                <img src={currentItem.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-black/10 shrink-0 mt-2" />
               )}
-              <div className="flex-1 flex flex-col gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Paste direct image URL or upload file below..." 
-                  className="w-full py-2 px-3 border rounded-lg text-sm" 
-                  value={currentItem.imageUrl} 
-                  onChange={e => setCurrentItem({...currentItem, imageUrl: e.target.value})} 
-                />
-                <input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black"
-                />
+              <div className="flex-1 flex flex-col gap-4">
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Option 1: Paste an Image Link</label>
+                  <input 
+                    type="text" 
+                    placeholder="https://example.com/image.png" 
+                    className="w-full py-2 px-3 border rounded-lg text-sm bg-gray-50" 
+                    value={currentItem.imageUrl} 
+                    onChange={e => setCurrentItem({...currentItem, imageUrl: e.target.value})} 
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1">Option 2: Upload from Computer</label>
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black"
+                  />
+                </div>
                 {isUploading && <div className="text-xs text-accent-primary mt-1 font-semibold">Uploading: {Math.round(uploadProgress)}%</div>}
               </div>
             </div>
