@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import { Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import Header from '../components/Header';
@@ -6,7 +7,6 @@ import Footer from '../components/Footer';
 import SmoothScroll from '../components/SmoothScroll';
 import { Toaster } from 'react-hot-toast';
 import NextTopLoader from 'nextjs-toploader';
-
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -71,6 +71,8 @@ export default function RootLayout({
           <Footer />
         </SmoothScroll>
       </body>
+      {/* Google Analytics */}
+      <GoogleAnalytics gaId="G-3KPVEQ91R0" />
     </html>
   );
 }
