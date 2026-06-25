@@ -1,14 +1,48 @@
 "use client";
 import { useState, useEffect } from "react";
 
-export const pricingData = {
-  usd: { symbol: "$", basic: 300, growth: 600 },
-  ngn: { symbol: "₦", basic: 350000, growth: 650000 },
-};
+export interface PricingTier {
+  id?: string;
+  name: string;
+  desc: string;
+  priceUsd: string;
+  priceNgn: string;
+  features: string[];
+  isPopular: boolean;
+  order: number;
+}
+
+export interface PortfolioItem {
+  id?: string;
+  title: string;
+  category: string;
+  imageUrl: string;
+  order: number;
+}
 
 export function usePricing() {
   const [currency, setCurrency] = useState<"usd" | "ngn">("usd");
   const [isLoaded, setIsLoaded] = useState(false);
+  
+  const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const res = await fetch('/api/content');
+        if (res.ok) {
+          const data = await res.json();
+          setPricingTiers(data.pricing || []);
+          setPortfolioItems(data.portfolio || []);
+        }
+      } catch (e) {
+        console.error("Failed to fetch CMS content:", e);
+      }
+    };
+
+    fetchContent();
+  }, []);
 
   useEffect(() => {
     const detectLocation = async () => {
@@ -43,5 +77,5 @@ export function usePricing() {
     detectLocation();
   }, []);
 
-  return { currency, pricing: pricingData[currency], isLoaded };
+  return { currency, symbol: currency === 'ngn' ? '₦' : '$', pricingTiers, portfolioItems, isLoaded };
 }

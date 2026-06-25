@@ -87,6 +87,10 @@
     @apply bg-accent-primary text-white;
   }
 
+  .btn-dark {
+    @apply bg-brand-dark text-white hover:bg-black;
+  }
+
   .btn-outline {
     @apply bg-transparent border border-solid border-white/50 text-white hover:border-white hover:bg-white hover:text-brand-dark;
   }
@@ -289,7 +293,7 @@
   }
 
   .pricing-card {
-    @apply bg-white border border-black/[0.08] rounded-lg py-12 px-10 flex-1 min-w-[300px] max-w-[400px] relative transition-all duration-500 ease-premium shadow-soft;
+    @apply bg-white border border-black/[0.08] rounded-lg py-12 px-10 flex-1 min-w-[300px] max-w-[400px] relative transition-all duration-500 ease-premium shadow-soft flex flex-col;
   }
 
   .pricing-card:hover {
@@ -305,7 +309,7 @@
   }
 
   .pricing-price {
-    @apply text-[clamp(2.5rem,4vw,3rem)] my-6;
+    @apply text-[clamp(1.75rem,3vw,2.25rem)] my-6;
   }
 
   .pricing-price span {
