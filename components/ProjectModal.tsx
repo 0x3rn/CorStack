@@ -84,7 +84,8 @@ ${formData.description}
         body: JSON.stringify({
           name: formData.name,
           email: formData.email,
-          message: compiledMessage
+          message: compiledMessage,
+          type: "project"
         }),
       });
 

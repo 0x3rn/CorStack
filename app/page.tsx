@@ -12,7 +12,8 @@ export default function HomePage() {
   const [selectedTier, setSelectedTier] = useState('');
 
   const handleBuyClick = (tier: string, priceText: string) => {
-    setSelectedTier(`${tier} (${symbol}${priceText})`);
+    const formattedPrice = priceText.split('-')[0].trim().replace(/^[\$₦]/, '');
+    setSelectedTier(`${tier} (Starting from ${symbol}${formattedPrice})`);
     setIsModalOpen(true);
   };
 
@@ -268,7 +269,8 @@ export default function HomePage() {
                 <h4 id={`price-${tier.id}`} className="pricing-price">
                   {isLoaded ? (
                     <>
-                      {symbol}{currency === 'usd' ? tier.priceUsd : tier.priceNgn}
+                      <span className="block text-[0.85rem] font-extrabold tracking-[0.15em] uppercase mb-1 text-accent-primary">Starting from</span>
+                      {symbol}{(currency === 'usd' ? tier.priceUsd : tier.priceNgn).split('-')[0].trim().replace(/^[\$₦]/, '')}
                     </>
                   ) : (
                     <span className={`block h-[48px] w-[180px] ${tier.isPopular ? 'bg-white/20' : 'bg-black/10'} animate-pulse rounded-md`}></span>

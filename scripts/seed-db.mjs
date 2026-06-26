@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 
+
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
   clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -15,7 +16,7 @@ const db = getFirestore(app);
 
 const pricingTiers = [
   {
-    name: 'Launchpad',
+    name: 'Launch',
     desc: 'Perfect for personal brands, events, product launches, waitlists, and simple online presences.',
     priceUsd: '100 - $250',
     priceNgn: '150,000 - ₦250,000',
@@ -34,63 +35,59 @@ const pricingTiers = [
     order: 0
   },
   {
-    name: 'Starter',
+    name: 'Growth',
     desc: 'Ideal for startups and local shops needing a professional online presence.',
     priceUsd: '300 - $450',
     priceNgn: '350,000 - ₦500,000',
     features: [
+      'Everything in Launch',
       'Up to 5 Custom Pages',
-      'Fully Responsive Design',
-      'Basic SEO Setup',
-      'Contact Form Integration',
-      'Analytics Integration',
-      'SSL Security',
-      'Social Media Integration',
+      'Custom Brand Integration',
+      'Newsletter Sign-up Form',
+      'WhatsApp / Live Chat Widget',
       'Google Maps Integration',
       'Website Training & Handover',
-      'Delivery in 7 days'
+      '1 Round of Revisions',
+      'Delivery in 7 Days'
     ],
     isPopular: false,
     order: 1
   },
   {
-    name: 'Growth',
+    name: 'Professional',
     desc: 'Built for brands and organizations that want to generate more leads and establish authority online.',
     priceUsd: '600 - $1,000',
     priceNgn: '600,000 - ₦1,000,000',
     features: [
-      'Everything in Starter',
+      'Everything in Growth',
       'Up to 10 Custom Pages',
-      'Advanced SEO Setup',
-      'Lead Capture Forms',
-      'Google Analytics Setup',
-      'Blog Setup',
+      'Advanced SEO Strategy',
+      'Lead Capture Funnels',
+      'Blog / CMS Setup',
       'Performance Optimization',
-      'Priority Support',
+      'Priority Email Support',
       '3 Rounds of Revisions',
-      'Delivery in 14 days'
+      'Delivery in 14 Days'
     ],
     isPopular: true,
     order: 2
   },
   {
-    name: 'Commerce & Enterprise',
+    name: 'Custom',
     desc: 'Advanced websites built for organizations that require custom functionality, scalability, and e-commerce capabilities.',
     priceUsd: '1,500 - $2,500',
     priceNgn: '1,500,000 - ₦2,500,000',
     features: [
-      'Everything in Growth',
-      'Online Store Setup',
+      'Everything in Professional',
       'Unlimited Scalable Pages',
-      'Custom Integrations',
-      'Membership Systems',
-      'Booking Systems',
-      'Secure Payment Gateway',
-      'Client Dashboards',
-      'Product Catalog Setup',
+      'Online Store Setup',
+      'Custom API Integrations',
+      'Membership & Booking Systems',
+      'Secure Payment Gateways',
+      'Client Dashboards & Portals',
       'Advanced Security Configuration',
-      'Dedication Project Support',
-      '90 Days Free Support Post-Launch'
+      'Dedicated Project Support',
+      '90 Days Free Post-Launch Support'
     ],
     isPopular: false,
     order: 3
@@ -119,9 +116,21 @@ const portfolioItems = [
 ];
 
 async function seed() {
+  console.log('Clearing existing Pricing...');
+  const pricingSnapshot = await db.collection('pricing').get();
+  for (const doc of pricingSnapshot.docs) {
+    await doc.ref.delete();
+  }
+
   console.log('Seeding Pricing...');
   for (const item of pricingTiers) {
     await db.collection('pricing').add(item);
+  }
+
+  console.log('Clearing existing Portfolio...');
+  const portfolioSnapshot = await db.collection('portfolio').get();
+  for (const doc of portfolioSnapshot.docs) {
+    await doc.ref.delete();
   }
 
   console.log('Seeding Portfolio...');
