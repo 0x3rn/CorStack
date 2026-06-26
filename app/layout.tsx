@@ -29,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
-      <body className="overflow-x-hidden max-w-[100vw]">
+      <body className="overflow-x-hidden">
         <NextTopLoader 
           color="#0055cc" 
           initialPosition={0.08}
@@ -66,7 +66,7 @@ export default function RootLayout({
           }}
         />
         <SmoothScroll>
-          <div className="flex flex-col min-h-screen overflow-x-hidden w-full max-w-[100vw]">
+          <div className="flex flex-col min-h-screen overflow-x-hidden w-full">
             <Header />
             {children}
             <Footer />

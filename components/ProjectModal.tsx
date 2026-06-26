@@ -114,17 +114,17 @@ ${formData.description}
       <div className={`fixed inset-0 bg-brand-dark/80 backdrop-blur-[8px] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose}></div>
       
       {/* Scrollable Container Wrapper */}
-      <div className="flex min-h-full items-center justify-center p-4 py-12 text-center sm:p-0 relative z-10">
+      <div className="flex min-h-[100dvh] items-center justify-center p-3 sm:p-0 relative z-10">
         {/* Modal Container */}
         <div 
-          className={`bg-white rounded-xl shadow-[0_30px_60px_rgba(0,0,0,0.12)] w-full max-w-[650px] text-left transform transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-12 scale-95'}`}
+          className={`bg-white rounded-xl shadow-[0_30px_60px_rgba(0,0,0,0.12)] w-full max-w-[650px] text-left transform transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col max-h-[95dvh] md:max-h-[90vh] ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-12 scale-95'}`}
         >
           {!isSuccess ? (
             <>
-              <div className="p-6 md:p-8 border-b border-black/[0.05] flex justify-between items-center">
-                <div>
-                  <h3 className="text-2xl font-bold mb-1">Let's Discuss Your Website</h3>
-                  <p className="text-text-muted text-[0.95rem]">Fill out the details below to get started with the {tier}.</p>
+              <div className="p-5 md:p-8 border-b border-black/[0.05] flex justify-between items-center shrink-0">
+                <div className="pr-4">
+                  <h3 className="text-xl md:text-2xl font-bold mb-1">Let's Discuss Your Website</h3>
+                  <p className="text-text-muted text-sm md:text-[0.95rem]">Fill out the details below to get started with the {tier}.</p>
                 </div>
                 <button 
                   onClick={onClose}
@@ -135,7 +135,8 @@ ${formData.description}
                 </button>
               </div>
               
-              <form onSubmit={handleSubmit} className="p-6 md:p-8 flex flex-col gap-6">
+              <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
+                <div className="p-5 md:p-8 flex flex-col gap-5 md:gap-6 overflow-y-auto">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2 ml-1">Selected Package</label>
                 <input type="text" readOnly className={`${inputClass} bg-gray-50/80 text-gray-500 cursor-not-allowed`} value={tier} />
@@ -230,21 +231,21 @@ ${formData.description}
                   )}
                 </div>
               </div>
-
-              <div className="mt-4 pt-6 border-t border-black/[0.05] shrink-0">
-                <button type="submit" disabled={isSubmitting} className="w-full btn btn-primary flex justify-center items-center py-4 text-[1.1rem]">
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-3">
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Sending Details...
-                    </span>
-                  ) : "Start My Project"}
-                </button>
-              </div>
-            </form>
+            </div>
+            <div className="p-5 md:p-8 border-t border-black/[0.05] shrink-0 bg-white">
+                  <button type="submit" disabled={isSubmitting} className="w-full btn btn-primary flex justify-center items-center py-4 text-[1.1rem]">
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-3">
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Sending Details...
+                      </span>
+                    ) : "Start My Project"}
+                  </button>
+                </div>
+              </form>
           </>
         ) : (
           <div className="p-12 flex flex-col items-center justify-center text-center">
