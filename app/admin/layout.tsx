@@ -83,6 +83,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <Link href="/admin/portfolio" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/portfolio' ? 'bg-black/5' : ''}`}>
                   Portfolio
                 </Link>
+                <Link href="/admin/services" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/services' ? 'bg-black/5' : ''}`}>
+                  Services
+                </Link>
+                <Link href="/admin/client-types" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/client-types' ? 'bg-black/5' : ''}`}>
+                  Who We Work With
+                </Link>
+                <Link href="/admin/process" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/process' ? 'bg-black/5' : ''}`}>
+                  Process
+                </Link>
+                
+                <div className="my-2 border-t border-black/5"></div>
+                
+                <Link href="/admin/settings" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/settings' ? 'bg-black/5' : ''}`}>
+                  Settings
+                </Link>
                 
                 <div className="my-2 border-t border-black/5"></div>
                 

@@ -115,6 +115,111 @@ const portfolioItems = [
   }
 ];
 
+const servicesItems = [
+  {
+    title: 'Custom Website Design',
+    description: 'Unique, professionally crafted designs that help you stand out online.',
+    iconName: 'Layout',
+    order: 0
+  },
+  {
+    title: 'Website Development',
+    description: 'Modern, responsive, secure, fast, and scalable web applications built with the latest technologies.',
+    iconName: 'Code',
+    order: 1
+  },
+  {
+    title: 'Website Redesigns',
+    description: 'Transform outdated websites into modern experiences that better represent your brand.',
+    iconName: 'RefreshCw',
+    order: 2
+  },
+  {
+    title: 'Hosting & Maintenance',
+    description: 'Reliable hosting, security updates, backups, and ongoing technical support.',
+    iconName: 'Server',
+    order: 3
+  }
+];
+
+const clientTypesItems = [
+  {
+    title: 'Startups',
+    description: 'Launch with professional online presence that builds credibility from day one and helps you attract customers, investors, and partners.',
+    iconName: 'Rocket',
+    order: 0
+  },
+  {
+    title: 'Creators & Personal Brands',
+    description: 'Showcase your work, tell your story, and create a platform that reflects your unique identity.',
+    iconName: 'UserCircle',
+    order: 1
+  },
+  {
+    title: 'Small Businesses',
+    description: 'Build trust, generate inquiries, and create a seamless experience for potential customers.',
+    iconName: 'Building2',
+    order: 2
+  },
+  {
+    title: 'Online Stores',
+    description: 'Turn visitors into customers with a shopping experience designed for potential customers.',
+    iconName: 'ShoppingCart',
+    order: 3
+  },
+  {
+    title: 'Professionals & Consultants',
+    description: 'Position yourself as an authority in your field with a website that highlights your expertise and services.',
+    iconName: 'Briefcase',
+    order: 4
+  },
+  {
+    title: 'Organizations & Nonprofits',
+    description: 'Communicate your mission clearly and connect with supporters, donors, volunteers and communities.',
+    iconName: 'HeartHandshake',
+    order: 5
+  }
+];
+
+const processItems = [
+  {
+    title: 'Discovery',
+    description: 'We learn about your goals, audience, requirements, and vision for the project.',
+    order: 0
+  },
+  {
+    title: 'Design & Wireframing',
+    description: 'We create a visual direction and gather feedback to ensure everything aligns with your expectations.',
+    order: 1
+  },
+  {
+    title: 'Development',
+    description: 'The approved design is transformed into a fully functional, responsive website.',
+    order: 2
+  },
+  {
+    title: 'Testing & Launch',
+    description: 'We thoroughly test every aspect of the website to ensure it is bug-free and fully functional before launching it to ensure everything works flawlessly.',
+    order: 3
+  }
+];
+
+const generalSettings = {
+  heroHeadline: 'Designed With Purpose. Built for Results.',
+  heroSubtitle: "Whether you're launching a startup, growing a personal brand, running an organization, selling products online, or upgrading an existing presence, your website should represent you professionally and help you achieve your goals. We build digital experiences tailored to your goals.",
+  isAcceptingProjects: true,
+  socialTwitter: '',
+  socialInstagram: '',
+  socialLinkedIn: ''
+};
+
+const contactSettings = {
+  ngnPhone: '+234 800 000 0000',
+  ngnEmail: 'hello@corstack.dev',
+  usdPhone: '+1 (234) 567-890',
+  usdEmail: 'hello@corstack.dev'
+};
+
 async function seed() {
   console.log('Clearing existing Pricing...');
   const pricingSnapshot = await db.collection('pricing').get();
@@ -137,6 +242,43 @@ async function seed() {
   for (const item of portfolioItems) {
     await db.collection('portfolio').add(item);
   }
+
+  console.log('Clearing existing Services...');
+  const servicesSnapshot = await db.collection('services').get();
+  for (const doc of servicesSnapshot.docs) {
+    await doc.ref.delete();
+  }
+
+  console.log('Seeding Services...');
+  for (const item of servicesItems) {
+    await db.collection('services').add(item);
+  }
+
+  console.log('Clearing existing Client Types...');
+  const clientTypesSnapshot = await db.collection('client_types').get();
+  for (const doc of clientTypesSnapshot.docs) {
+    await doc.ref.delete();
+  }
+
+  console.log('Seeding Client Types...');
+  for (const item of clientTypesItems) {
+    await db.collection('client_types').add(item);
+  }
+
+  console.log('Clearing existing Process...');
+  const processSnapshot = await db.collection('process').get();
+  for (const doc of processSnapshot.docs) {
+    await doc.ref.delete();
+  }
+
+  console.log('Seeding Process...');
+  for (const item of processItems) {
+    await db.collection('process').add(item);
+  }
+
+  console.log('Seeding Settings...');
+  await db.collection('settings').doc('general').set(generalSettings);
+  await db.collection('settings').doc('contact').set(contactSettings);
 
   console.log('Done!');
   process.exit(0);

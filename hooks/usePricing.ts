@@ -19,6 +19,45 @@ export interface PortfolioItem {
   imageUrl: string;
   order: number;
 }
+export interface ServiceItem {
+  id?: string;
+  title: string;
+  description: string;
+  iconName: string;
+  order: number;
+}
+
+export interface ClientTypeItem {
+  id?: string;
+  title: string;
+  description: string;
+  iconName: string;
+  order: number;
+}
+
+export interface ProcessItem {
+  id?: string;
+  title: string;
+  description: string;
+  order: number;
+}
+
+export interface Settings {
+  general?: {
+    heroHeadline: string;
+    heroSubtitle: string;
+    isAcceptingProjects: boolean;
+    socialTwitter: string;
+    socialInstagram: string;
+    socialLinkedIn: string;
+  };
+  contact?: {
+    ngnPhone: string;
+    ngnEmail: string;
+    usdPhone: string;
+    usdEmail: string;
+  };
+}
 
 export function usePricing() {
   const [currency, setCurrency] = useState<"usd" | "ngn">("usd");
@@ -26,6 +65,10 @@ export function usePricing() {
   
   const [pricingTiers, setPricingTiers] = useState<PricingTier[]>([]);
   const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [servicesItems, setServicesItems] = useState<ServiceItem[]>([]);
+  const [clientTypes, setClientTypes] = useState<ClientTypeItem[]>([]);
+  const [processItems, setProcessItems] = useState<ProcessItem[]>([]);
+  const [settings, setSettings] = useState<Settings>({});
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -35,6 +78,10 @@ export function usePricing() {
           const data = await res.json();
           setPricingTiers(data.pricing || []);
           setPortfolioItems(data.portfolio || []);
+          setServicesItems(data.services || []);
+          setClientTypes(data.clientTypes || []);
+          setProcessItems(data.process || []);
+          setSettings(data.settings || {});
         }
       } catch (e) {
         console.error("Failed to fetch CMS content:", e);
@@ -77,5 +124,16 @@ export function usePricing() {
     detectLocation();
   }, []);
 
-  return { currency, symbol: currency === 'ngn' ? '₦' : '$', pricingTiers, portfolioItems, isLoaded };
+  return { 
+    currency, 
+    symbol: currency === 'ngn' ? '₦' : '$',
+    setCurrency, 
+    pricingTiers, 
+    portfolioItems,
+    servicesItems,
+    clientTypes,
+    processItems,
+    settings,
+    isLoaded 
+  };
 }

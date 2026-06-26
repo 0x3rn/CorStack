@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { usePricing } from '../hooks/usePricing';
 import ContactForm from '../components/ContactForm';
 import ProjectModal from '../components/ProjectModal';
+import { DynamicIcon } from '../components/DynamicIcon';
 
 export default function HomePage() {
-  const { currency, symbol, pricingTiers, portfolioItems, isLoaded } = usePricing();
+  const { currency, symbol, pricingTiers, portfolioItems, servicesItems, clientTypes, processItems, settings, isLoaded } = usePricing();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
 
@@ -20,10 +21,16 @@ export default function HomePage() {
   return (
     <>
       <section id="home" className="hero-section">
+        {settings?.general?.isAcceptingProjects && (
+          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+            Currently accepting new projects
+          </div>
+        )}
         <span className="hero-eyebrow">Custom Web Design & Development</span>
-        <h1 className="hero-title">Your Next Website Should Do More Than Look Good.</h1>
+        <h1 className="hero-title">{settings?.general?.heroHeadline || "Your Next Website Should Do More Than Look Good."}</h1>
         <p className="hero-subtitle">
-          Custom websites built for brands, creators, startups, professionals, and organizations that want to make stronger online impression. We combine thoughtful design, modern development, and user-focused strategy to create websites that are fast, engaging, and built around your goals.
+          {settings?.general?.heroSubtitle || "We combine thoughtful design, modern development, and user-focused strategy to create websites that are fast, engaging, and built around your goals."}
         </p>
         
         <div className="hero-actions">
@@ -49,41 +56,19 @@ export default function HomePage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1400px] mx-auto">
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg>
-            <h3 className="card-title">Startups</h3>
-            <p className="card-text">Launch with professional online presence that builds credibility from day one and helps you attract customers, investors, and partners.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            <h3 className="card-title">Creators & Personal Brands</h3>
-            <p className="card-text">Showcase your work, tell your story, and create a platform that reflects your unique identity.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            <h3 className="card-title">Small Businesses</h3>
-            <p className="card-text">Build trust, generate inquiries, and create a seamless experience for potential customers.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
-            <h3 className="card-title">Online Stores</h3>
-            <p className="card-text">Turn visitors into customers with a shopping experience designed for potential customers.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-            <h3 className="card-title">Professionals & Consultants</h3>
-            <p className="card-text">Position yourself as an authority in your field with a website that highlights your expertise and services.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <h3 className="card-title">Organizations & Nonprofits</h3>
-            <p className="card-text">Communicate your mission clearly and connect with supporters, donors, volunteers and communities.</p>
-          </article>
+          {clientTypes && clientTypes.length > 0 ? (
+            clientTypes.map(client => (
+              <article key={client.id || client.title} className="feature-card">
+                <DynamicIcon name={client.iconName} size={32} />
+                <h3 className="card-title">{client.title}</h3>
+                <p className="card-text">{client.description}</p>
+              </article>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500 py-12">
+              Loading...
+            </div>
+          )}
         </div>
       </section>
 
@@ -173,29 +158,19 @@ export default function HomePage() {
         </div>
         
         <div className="features-grid">
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-            <h3 className="card-title">Custom Website Design</h3>
-            <p className="card-text">Unique, professionally crafted designs that help you stand out online.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
-            <h3 className="card-title">Website Development</h3>
-            <p className="card-text">Modern, responsive, secure, fast, and scalable web applications built with the latest technologies.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
-            <h3 className="card-title">Website Redesigns</h3>
-            <p className="card-text">Transform outdated websites into modern experiences that better represent your brand.</p>
-          </article>
-
-          <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            <h3 className="card-title">Hosting & Maintenance</h3>
-            <p className="card-text">Reliable hosting, security updates, backups, and ongoing technical support.</p>
-          </article>
+          {servicesItems && servicesItems.length > 0 ? (
+            servicesItems.map(service => (
+              <article key={service.id || service.title} className="feature-card">
+                <DynamicIcon name={service.iconName} size={32} />
+                <h3 className="card-title">{service.title}</h3>
+                <p className="card-text">{service.description}</p>
+              </article>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-500 py-12">
+              Loading...
+            </div>
+          )}
         </div>
       </section>
 
@@ -233,22 +208,18 @@ export default function HomePage() {
         </div>
         
         <ol className="process-steps">
-          <li className="step-item">
-            <h4 className="step-title">Discovery</h4>
-            <p className="step-text">We learn about your goals, audience, requirements, and vision for the project.</p>
-          </li>
-          <li className="step-item">
-            <h4 className="step-title">Design & Wireframing</h4>
-            <p className="step-text">We ceate a visual direction and gather feedback to ensure everything aligns with your expectations.</p>
-          </li>
-          <li className="step-item">
-            <h4 className="step-title">Development</h4>
-            <p className="step-text">The approved design is transormed into a fully functional, responsive website.</p>
-          </li>
-          <li className="step-item">
-            <h4 className="step-title">Testing & Launch</h4>
-            <p className="step-text">We thoroughly test every aspect of the website to ensure it is bug-free and fully functional before launching it to ensure everything works flawlessly.</p>
-          </li>
+          {processItems && processItems.length > 0 ? (
+            processItems.map(step => (
+              <li key={step.id || step.title} className="step-item">
+                <h4 className="step-title">{step.title}</h4>
+                <p className="step-text">{step.description}</p>
+              </li>
+            ))
+          ) : (
+            <div className="w-full text-center text-gray-500 py-12">
+              Loading...
+            </div>
+          )}
         </ol>
       </section>
 
