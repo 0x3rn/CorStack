@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { db, adminAuth } from '../../../../../lib/firebase-admin';
 
 async function verifyAdmin(request: Request) {
@@ -14,11 +14,12 @@ async function verifyAdmin(request: Request) {
   return decodedToken;
 }
 
-export async function POST(request: Request, { params }: { params: { collection: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ collection: string }> }) {
   try {
     await verifyAdmin(request);
     const data = await request.json();
-    const coll = params.collection;
+    const resolvedParams = await params;
+    const coll = resolvedParams.collection;
     
     if (data.order === undefined) {
       const snap = await db.collection(coll).get();
@@ -32,12 +33,13 @@ export async function POST(request: Request, { params }: { params: { collection:
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { collection: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ collection: string }> }) {
   try {
     await verifyAdmin(request);
     const data = await request.json();
     const { id, ...updateData } = data;
-    const coll = params.collection;
+    const resolvedParams = await params;
+    const coll = resolvedParams.collection;
     
     if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
@@ -48,12 +50,13 @@ export async function PUT(request: Request, { params }: { params: { collection: 
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { collection: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ collection: string }> }) {
   try {
     await verifyAdmin(request);
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
-    const coll = params.collection;
+    const resolvedParams = await params;
+    const coll = resolvedParams.collection;
     
     if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
 
