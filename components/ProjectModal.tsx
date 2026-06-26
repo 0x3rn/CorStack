@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, useEffect } from "react";
 import { createPortal } from "react-dom";
+import toast from "react-hot-toast";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -92,10 +93,10 @@ ${formData.description}
       if (result.success) {
         setIsSuccess(true);
       } else {
-        alert("Something went wrong. Please check your connection.");
+        toast.error(result.message || "Something went wrong. Please try again.");
       }
     } catch (error) {
-      alert("Error connecting to server.");
+      toast.error("Error connecting to server. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

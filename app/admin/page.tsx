@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { auth } from "../../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface Lead {
   id: string;
@@ -34,11 +35,11 @@ export default function AdminDashboard() {
       router.push("/admin/login");
     } else if (user) {
       if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        alert("Unauthorized access. You are not the admin.");
-        auth.signOut();
-        return;
+        toast.error("Unauthorized access. You are not the admin.");
+        router.push("/");
+      } else {
+        fetchLeads();
       }
-      fetchLeads();
     }
   }, [user, loading, router]);
 
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
       setEditingLeadId(null);
     } catch (error) {
       console.error("Error saving lead details:", error);
-      alert("Failed to save changes");
+      toast.error("Failed to save changes");
     } finally {
       setIsSaving(false);
     }
