@@ -259,14 +259,6 @@
     @apply overflow-hidden bg-white cursor-pointer;
   }
 
-  .portfolio-card img {
-    @apply h-[250px] w-full object-contain bg-[#f8fafc] transition-transform duration-600 ease-premium;
-  }
-
-  .portfolio-card:hover img {
-    @apply scale-105;
-  }
-
   .portfolio-info {
     @apply p-6 bg-white relative z-10 border-t border-black/[0.05];
   }

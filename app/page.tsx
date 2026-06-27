@@ -198,12 +198,25 @@ export default async function HomePage() {
         <div className="portfolio-grid">
           {portfolio && portfolio.length > 0 ? (
             portfolio.map(item => (
-              <article key={item.id} className="portfolio-card">
-                <img src={item.imageUrl} alt={item.title} />
+              <article key={item.id} className="portfolio-card group">
+                {/* Fake Mac Browser Header */}
+                <div className="w-full bg-[#f8fafc] px-4 py-3 flex gap-2 border-b border-black/5 relative z-10">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+                </div>
+                
+                <div className="relative overflow-hidden w-full h-[250px] bg-[#f8fafc] flex items-center justify-center">
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-105" />
+                </div>
+                
                 <div className="portfolio-info flex flex-col gap-3">
                   <div>
                     <h4 className="portfolio-title">{item.title}</h4>
                     <p className="portfolio-category">{item.category}</p>
+                    {item.description && (
+                      <p className="text-[0.95rem] text-text-muted mt-3 leading-relaxed">{item.description}</p>
+                    )}
                   </div>
                   {item.websiteUrl && (
                     <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-bold text-accent-primary hover:underline mt-auto">

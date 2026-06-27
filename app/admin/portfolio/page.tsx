@@ -11,6 +11,7 @@ interface PortfolioItem {
   id?: string;
   title: string;
   category: string;
+  description?: string;
   imageUrl: string;
   websiteUrl?: string;
   order: number;
@@ -63,6 +64,7 @@ export default function AdminPortfolioPage() {
     setCurrentItem({
       title: '',
       category: '',
+      description: '',
       imageUrl: '',
       websiteUrl: '',
       order: items.length
@@ -190,6 +192,11 @@ export default function AdminPortfolioPage() {
               <label className="block text-sm font-semibold mb-1">Category (e.g. E-Commerce)</label>
               <input required type="text" className="w-full py-2 px-3 border rounded-lg" value={currentItem.category} onChange={e => setCurrentItem({...currentItem, category: e.target.value})} />
             </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold mb-1">Description (Optional)</label>
+            <textarea className="w-full py-2 px-3 border rounded-lg h-24 resize-none" value={currentItem.description || ''} onChange={e => setCurrentItem({...currentItem, description: e.target.value})}></textarea>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
