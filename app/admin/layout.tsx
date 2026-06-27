@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               {/* Header */}
               <div className="p-4 mb-2 px-6 flex justify-between items-center shrink-0">
                 <Link href="/admin" className="font-bold text-xl text-brand-dark">
-                  CorStack Admin
+                  Corstack Admin
                 </Link>
                 <button 
                   className="md:hidden text-brand-dark p-1"
@@ -71,10 +71,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
               {/* Scrollable Links */}
               <div className="flex-1 overflow-y-auto px-4 flex flex-col gap-2">
-                <Link href="/admin/overview" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/overview' ? 'bg-black/5' : ''}`}>
+                <Link href="/admin" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin' ? 'bg-black/5' : ''}`}>
                   Overview
                 </Link>
-                <Link href="/admin" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin' ? 'bg-black/5' : ''}`}>
+                <Link href="/admin/leads" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/leads' ? 'bg-black/5' : ''}`}>
                   Leads
                 </Link>
                 <Link href="/admin/pricing" className={`px-4 py-3 rounded-lg text-sm font-medium hover:bg-black/5 transition-colors ${pathname === '/admin/pricing' ? 'bg-black/5' : ''}`}>

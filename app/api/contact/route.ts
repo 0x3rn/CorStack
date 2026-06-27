@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     
     if (type === 'project') {
       businessEmail = 'projects@corstack.dev';
-      subjectPrefix = 'New Project Inquiry';
+      subjectPrefix = 'New Project Request';
     }
 
     const formattedMessage = message.replace(/\n/g, '<br>');
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
       <body>
         <div class="container">
           <div class="header">
-            <h1>CorStack Agency</h1>
+            <h1>Corstack Agency</h1>
           </div>
           <div class="content">
             <span class="badge">${subjectPrefix} Received</span>
@@ -92,7 +92,7 @@ export async function POST(req: Request) {
       <body>
         <div class="container">
           <div class="header">
-            <h1>CorStack</h1>
+            <h1>Corstack</h1>
           </div>
           <div class="content">
             <div class="greeting">Hi ${clientFirstName},</div>
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
             </div>
           </div>
           <div class="footer">
-            CorStack Design & Development • ${businessEmail}
+            Corstack Design & Development • ${businessEmail}
           </div>
         </div>
       </body>
@@ -121,7 +121,7 @@ export async function POST(req: Request) {
 
     // Send Notification to Business
     const businessResponse = await resend.emails.send({
-      from: `CorStack Leads <${businessEmail}>`,
+      from: `Corstack Leads <${businessEmail}>`,
       to: [businessEmail],
       replyTo: email,
       subject: `${subjectPrefix}: ${name}`,
@@ -135,7 +135,7 @@ export async function POST(req: Request) {
 
     // Send Auto-Responder to Client
     const clientResponse = await resend.emails.send({
-      from: `CorStack <${businessEmail}>`,
+      from: `Corstack <${businessEmail}>`,
       to: [email],
       subject: `We've received your message, ${clientFirstName}!`,
       html: autoResponderHtml,

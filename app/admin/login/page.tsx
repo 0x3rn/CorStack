@@ -43,7 +43,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white rounded-xl shadow-soft p-8 border border-black/[0.05]">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-brand-dark mb-2">Admin Login</h1>
-          <p className="text-text-muted text-sm">Sign in to manage your CorStack leads.</p>
+          <p className="text-text-muted text-sm">Sign in to manage your Corstack business.</p>
         </div>
         
         <form onSubmit={handleLogin} className="flex flex-col gap-5">

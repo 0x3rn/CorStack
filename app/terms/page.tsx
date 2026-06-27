@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | CorStack',
-  description: 'Terms and conditions for using CorStack web design and development services.',
+  title: 'Terms of Service | Corstack',
+  description: 'Terms and conditions for using Corstack web design and development services.',
 };
 
 export default function TermsOfServicePage() {
@@ -12,12 +12,12 @@ export default function TermsOfServicePage() {
       <p className="last-updated">Last Updated: May 23, 2026</p>
 
       <p>
-        Welcome to CorStack. By accessing our website or purchasing our web design services, you agree to comply with and be bound by the following terms and conditions.
+        Welcome to Corstack. By accessing our website or purchasing our web design services, you agree to comply with and be bound by the following terms and conditions.
       </p>
 
       <h2>1. Services Rendered</h2>
       <p>
-        CorStack provides custom web design, development, and maintenance services. The specific scope, timeline, and deliverables of each project are outlined in the pricing tier selected or the custom proposal provided to the client prior to checkout.
+        Corstack provides custom web design, development, and maintenance services. The specific scope, timeline, and deliverables of each project are outlined in the pricing tier selected or the custom proposal provided to the client prior to checkout.
       </p>
 
       <h2>2. Payments and Refunds</h2>
@@ -42,12 +42,12 @@ export default function TermsOfServicePage() {
 
       <h2>5. Intellectual Property</h2>
       <p>
-        Upon final payment, the client assumes full ownership of the final website design, code, and graphics created specifically for the project. CorStack retains the right to display the completed website in our portfolio and marketing materials.
+        Upon final payment, the client assumes full ownership of the final website design, code, and graphics created specifically for the project. Corstack retains the right to display the completed website in our portfolio and marketing materials.
       </p>
 
       <h2>6. Limitation of Liability</h2>
       <p>
-        CorStack builds websites using modern, secure practices. However, we are not liable for website downtime, security breaches, or data loss caused by third-party hosting providers, outdated plugins managed by the client, or external malicious attacks after the final handoff.
+        Corstack builds websites using modern, secure practices. However, we are not liable for website downtime, security breaches, or data loss caused by third-party hosting providers, outdated plugins managed by the client, or external malicious attacks after the final handoff.
       </p>
 
       <h2>7. Contact</h2>

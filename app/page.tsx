@@ -20,6 +20,33 @@ export default function HomePage() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfessionalService",
+            "name": "Corstack",
+            "url": "https://corstack.dev",
+            "logo": "https://corstack.dev/icon.png",
+            "image": "https://corstack.dev/icon.png",
+            "description": "Corstack is a premium web design and development agency based in Lagos, Nigeria. We specialize in custom website design, frontend development, mobile-first design, e-commerce development, and SEO-optimized web solutions. If you are looking for the best web designers and developers in Nigeria to build fast, beautiful, and conversion-driven websites, CorStack is your top choice.",
+            "email": "hello@corstack.dev",
+            "address": {
+              "@type": "PostalAddress",
+              "addressLocality": "Lagos",
+              "addressCountry": "Nigeria"
+            },
+            "sameAs": [
+              "https://x.com/corstackdev",
+              "https://instagram.com/corstackdev"
+            ],
+            "priceRange": "$$",
+            "areaServed": "NG",
+            "serviceType": "Web Design & Development"
+          })
+        }}
+      />
       <section id="home" className="hero-section">
         {settings?.general?.isAcceptingProjects && (
           <div className="mb-6 inline-flex items-center gap-2 px-3 py-1 text-sm font-medium rounded-full bg-green-500/10 text-green-600 border border-green-500/20">
@@ -30,7 +57,7 @@ export default function HomePage() {
         <span className="hero-eyebrow">Custom Web Design & Development</span>
         <h1 className="hero-title">{settings?.general?.heroHeadline || "Your Next Website Should Do More Than Look Good."}</h1>
         <p className="hero-subtitle">
-          {settings?.general?.heroSubtitle || "We combine thoughtful design, modern development, and user-focused strategy to create websites that are fast, engaging, and built around your goals."}
+          {settings?.general?.heroSubtitle || "Custom websites designed for brands, creators, startups, professionals, and organizations that want to make a stronger impression online. We combine thoughtful design, modern development, and user-focused strategy to create websites that are fast, engaging, and built around your goals."}
         </p>
         
         <div className="hero-actions">
@@ -186,9 +213,17 @@ export default function HomePage() {
             portfolioItems.map(item => (
               <article key={item.id} className="portfolio-card">
                 <img src={item.imageUrl} alt={item.title} />
-                <div className="portfolio-info">
-                  <h4 className="portfolio-title">{item.title}</h4>
-                  <p className="portfolio-category">{item.category}</p>
+                <div className="portfolio-info flex flex-col gap-3">
+                  <div>
+                    <h4 className="portfolio-title">{item.title}</h4>
+                    <p className="portfolio-category">{item.category}</p>
+                  </div>
+                  {item.websiteUrl && (
+                    <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-bold text-accent-primary hover:underline mt-auto">
+                      Visit Website
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    </a>
+                  )}
                 </div>
               </article>
             ))

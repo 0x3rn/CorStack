@@ -24,7 +24,9 @@ export default function ContactForm() {
 
       if (result.success) {
         toast.success("Message sent successfully!");
-        router.push("/message-success");
+        setFormData({ name: "", email: "", message: "" });
+        setIsSending(false);
+        router.push("/confirmation?type=contact");
       } else {
         toast.error("Something went wrong. Please check your connection.");
         setIsSending(false);

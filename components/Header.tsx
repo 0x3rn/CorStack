@@ -17,7 +17,7 @@ export default function Header() {
         <div className="brand-logo">
           <Link href="/">
             <img src="https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/logo.png?alt=media&token=22e02e00-1a2d-4c44-ab03-bf35af099509" alt="CorStack Logo" className="nav-logo-img" />
-            <strong>CorStack.</strong>
+            <strong>corstack.</strong>
           </Link>
         </div>
         <ul className="nav-links">

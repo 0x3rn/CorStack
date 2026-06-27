@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth } from "../../../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 interface PricingTier {
@@ -18,6 +19,7 @@ interface PricingTier {
 
 export default function AdminPricingPage() {
   const [user, loading] = useAuthState(auth);
+  const router = useRouter();
   const [tiers, setTiers] = useState<PricingTier[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -26,10 +28,17 @@ export default function AdminPricingPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchPricing();
+    if (!loading && !user) {
+      router.push("/admin/login");
+    } else if (user) {
+      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        toast.error("Unauthorized access. You are not the admin.");
+        router.push("/");
+      } else {
+        fetchPricing();
+      }
     }
-  }, [user]);
+  }, [user, loading, router]);
 
   const fetchPricing = async () => {
     try {

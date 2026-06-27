@@ -9,7 +9,7 @@ async function verifyAdmin(request: Request) {
   const decodedToken = await adminAuth.verifyIdToken(token);
   
   if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && decodedToken.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    throw new Error('Forbidden');
+    throw new Error(`Forbidden: Your email (${decodedToken.email}) does not match the admin email (${process.env.NEXT_PUBLIC_ADMIN_EMAIL})`);
   }
   return decodedToken;
 }
@@ -27,7 +27,9 @@ export async function POST(request: Request) {
     const docRef = await db.collection('portfolio').add(data);
     return NextResponse.json({ id: docRef.id, ...data });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
+    console.error("POST Error:", error);
+    const status = (error.message.startsWith('Forbidden') || error.message === 'Unauthorized') ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }
 
@@ -42,7 +44,9 @@ export async function PUT(request: Request) {
     await db.collection('portfolio').doc(id).update(updateData);
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
+    console.error("PUT Error:", error);
+    const status = (error.message.startsWith('Forbidden') || error.message === 'Unauthorized') ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }
 
@@ -57,6 +61,8 @@ export async function DELETE(request: Request) {
     await db.collection('portfolio').doc(id).delete();
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
+    console.error("DELETE Error:", error);
+    const status = (error.message.startsWith('Forbidden') || error.message === 'Unauthorized') ? 401 : 500;
+    return NextResponse.json({ error: error.message }, { status });
   }
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth, storage } from "../../../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 
@@ -11,11 +12,13 @@ interface PortfolioItem {
   title: string;
   category: string;
   imageUrl: string;
+  websiteUrl?: string;
   order: number;
 }
 
 export default function AdminPortfolioPage() {
   const [user, loading] = useAuthState(auth);
+  const router = useRouter();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -27,10 +30,17 @@ export default function AdminPortfolioPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchPortfolio();
+    if (!loading && !user) {
+      router.push("/admin/login");
+    } else if (user) {
+      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        toast.error("Unauthorized access. You are not the admin.");
+        router.push("/");
+      } else {
+        fetchPortfolio();
+      }
     }
-  }, [user]);
+  }, [user, loading, router]);
 
   const fetchPortfolio = async () => {
     try {
@@ -54,6 +64,7 @@ export default function AdminPortfolioPage() {
       title: '',
       category: '',
       imageUrl: '',
+      websiteUrl: '',
       order: items.length
     });
     setIsEditing(true);
@@ -94,8 +105,14 @@ export default function AdminPortfolioPage() {
     setIsSaving(true);
     
     try {
+      // Auto-format websiteUrl
+      let finalItem = { ...currentItem };
+      if (finalItem.websiteUrl && !finalItem.websiteUrl.startsWith('http://') && !finalItem.websiteUrl.startsWith('https://')) {
+        finalItem.websiteUrl = 'https://' + finalItem.websiteUrl;
+      }
+
       const token = await user.getIdToken();
-      const method = currentItem.id ? 'PUT' : 'POST';
+      const method = finalItem.id ? 'PUT' : 'POST';
       
       const res = await fetch('/api/admin/portfolio', {
         method,
@@ -103,16 +120,19 @@ export default function AdminPortfolioPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(currentItem)
+        body: JSON.stringify(finalItem)
       });
       
-      if (!res.ok) throw new Error('Failed to save');
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(errorText || 'Failed to save');
+      }
       
       toast.success('Saved successfully');
       setIsEditing(false);
       fetchPortfolio();
-    } catch (e) {
-      toast.error('Failed to save');
+    } catch (e: any) {
+      toast.error(`Failed to save: ${e.message}`);
     } finally {
       setIsSaving(false);
     }
@@ -172,9 +192,15 @@ export default function AdminPortfolioPage() {
             </div>
           </div>
           
-          <div>
-            <label className="block text-sm font-semibold mb-1">Order (Number)</label>
-            <input required type="number" className="w-full py-2 px-3 border rounded-lg" value={currentItem.order} onChange={e => setCurrentItem({...currentItem, order: parseInt(e.target.value)})} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold mb-1">Order (Number)</label>
+              <input required type="number" className="w-full py-2 px-3 border rounded-lg" value={currentItem.order} onChange={e => setCurrentItem({...currentItem, order: parseInt(e.target.value)})} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold mb-1">Website URL (Optional)</label>
+              <input type="text" placeholder="example.com" className="w-full py-2 px-3 border rounded-lg" value={currentItem.websiteUrl || ''} onChange={e => setCurrentItem({...currentItem, websiteUrl: e.target.value})} />
+            </div>
           </div>
 
           <div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { auth } from "../../../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 interface ClientTypeItem {
@@ -15,6 +16,7 @@ interface ClientTypeItem {
 
 export default function AdminClientTypesPage() {
   const [user, loading] = useAuthState(auth);
+  const router = useRouter();
   const [items, setItems] = useState<ClientTypeItem[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -23,10 +25,17 @@ export default function AdminClientTypesPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      fetchItems();
+    if (!loading && !user) {
+      router.push("/admin/login");
+    } else if (user) {
+      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        toast.error("Unauthorized access. You are not the admin.");
+        router.push("/");
+      } else {
+        fetchItems();
+      }
     }
-  }, [user]);
+  }, [user, loading, router]);
 
   const fetchItems = async () => {
     try {

@@ -3,6 +3,7 @@
 import { useState, FormEvent, useEffect } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ interface ProjectModalProps {
 export default function ProjectModal({ isOpen, onClose, tier, currency }: ProjectModalProps) {
   const [mounted, setMounted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const router = useRouter();
   
   const [formData, setFormData] = useState({
     name: "",
@@ -45,7 +46,6 @@ export default function ProjectModal({ isOpen, onClose, tier, currency }: Projec
 
   useEffect(() => {
     if (isOpen) {
-      setIsSuccess(false);
       setIsSubmitting(false);
       setFormData({
         name: "",
@@ -92,7 +92,8 @@ ${formData.description}
       const result = await response.json();
 
       if (result.success) {
-        setIsSuccess(true);
+        onClose();
+        router.push("/confirmation?type=project");
       } else {
         toast.error(result.message || "Something went wrong. Please try again.");
       }
@@ -119,8 +120,6 @@ ${formData.description}
         <div 
           className={`bg-white rounded-xl shadow-[0_30px_60px_rgba(0,0,0,0.12)] w-full max-w-[650px] text-left transform transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col max-h-[95dvh] md:max-h-[90vh] ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-12 scale-95'}`}
         >
-          {!isSuccess ? (
-            <>
               <div className="p-5 md:p-8 border-b border-black/[0.05] flex justify-between items-center shrink-0">
                 <div className="pr-4">
                   <h3 className="text-xl md:text-2xl font-bold mb-1">Let's Discuss Your Website</h3>
@@ -246,21 +245,6 @@ ${formData.description}
                   </button>
                 </div>
               </form>
-          </>
-        ) : (
-          <div className="p-12 flex flex-col items-center justify-center text-center">
-            <div className="w-24 h-24 bg-[#10B981]/10 text-[#10B981] rounded-full flex items-center justify-center mb-8">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </div>
-            <h3 className="text-3xl font-bold mb-4">Thank You</h3>
-            <p className="text-text-muted text-[1.05rem] mb-10 max-w-[400px] leading-relaxed">
-              We've received your project details. We'll review your requirements and reach out within 24 hours to discuss the next steps.
-            </p>
-            <button onClick={onClose} className="w-full max-w-[300px] btn btn-secondary py-4 text-[1.05rem]">
-              Return To Website
-            </button>
-          </div>
-        )}
       </div>
       </div>
     </div>

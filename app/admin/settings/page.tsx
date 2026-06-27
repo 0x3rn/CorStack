@@ -3,9 +3,14 @@
 import { useState, useEffect } from 'react';
 import { auth } from '../../../lib/firebase';
 import { usePricing } from '../../../hooks/usePricing';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
   const { settings } = usePricing();
+  const [user, authLoading] = useAuthState(auth);
+  const router = useRouter();
   
   const [general, setGeneral] = useState({
     heroHeadline: '',
@@ -25,6 +30,18 @@ export default function SettingsPage() {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Admin verification
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/admin/login");
+    } else if (user) {
+      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+        toast.error("Unauthorized access. You are not the admin.");
+        router.push("/");
+      }
+    }
+  }, [user, authLoading, router]);
 
   // Load initial data
   useEffect(() => {

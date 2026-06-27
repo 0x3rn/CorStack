@@ -15,8 +15,69 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'CorStack | Web Design & Development',
-  description: 'Stunning, fast, and conversion-driven websites tailored for modern brands. Elevate your online presence with CorStack.',
+  metadataBase: new URL('https://corstack.dev'),
+  title: {
+    default: 'Corstack | Top Web Design Agency in Lagos, Nigeria',
+    template: '%s | Corstack'
+  },
+  description: 'Corstack is a premium web design and development agency in Lagos, Nigeria. We build stunning, fast, and conversion-driven websites tailored for modern brands. Hire the best frontend developers and web designers.',
+  keywords: [
+    "web design in nigeria",
+    "web agency in nigeria",
+    "top 5 web agency in nigeria",
+    "top web design agency",
+    "best web design company in lagos",
+    "frontend developer company nigeria",
+    "website agency nigeria",
+    "web designers in lagos",
+    "web developers in nigeria",
+    "software development agency nigeria",
+    "premium website design",
+    "corstack",
+    "corstack.dev",
+    "creative web agency",
+    "custom web development lagos",
+    "ecommerce website design nigeria",
+    "ui ux design agency nigeria",
+    "react nextjs developers nigeria",
+    "seo optimized website developers"
+  ],
+  authors: [{ name: 'Corstack' }],
+  creator: 'Corstack',
+  publisher: 'Corstack',
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Corstack | Top Web Design Agency in Lagos, Nigeria',
+    description: 'Elevate your online presence with Corstack. Stunning, fast, and conversion-driven websites tailored for modern brands.',
+    url: 'https://corstack.dev',
+    siteName: 'Corstack',
+    locale: 'en_NG',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Corstack | Top Web Design Agency in Lagos, Nigeria',
+    description: 'Elevate your online presence with Corstack. Stunning, fast, and conversion-driven websites tailored for modern brands.',
+    creator: '@corstackdev',
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: '/icon.png',
   }

@@ -11,7 +11,7 @@ async function verifyAdmin(request: Request) {
   const decodedToken = await adminAuth.verifyIdToken(token);
   
   if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && decodedToken.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    throw new Error('Forbidden');
+    throw new Error(`Forbidden: Your email (${decodedToken.email}) does not match the admin email (${process.env.NEXT_PUBLIC_ADMIN_EMAIL})`);
   }
   
   return decodedToken;
