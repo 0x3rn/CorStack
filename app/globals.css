@@ -720,3 +720,23 @@
 .animate-page-in {
   animation: pageFadeIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+@keyframes scroll-portfolio {
+  0% {
+    object-position: top center;
+  }
+  50% {
+    object-position: bottom center;
+  }
+  100% {
+    object-position: top center;
+  }
+}
+
+.hover-scroll-img {
+  object-position: top center;
+}
+
+.animate-scroll-portfolio {
+  animation: scroll-portfolio 10s ease-in-out forwards;
+}
