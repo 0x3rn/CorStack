@@ -27,12 +27,12 @@
 
 @layer base {
   html {
-    @apply bg-bg-light text-text-main leading-relaxed overflow-x-hidden;
+    @apply bg-bg-light text-text-main leading-relaxed overflow-x-hidden max-w-[100vw];
     font-family: "Plus Jakarta Sans", sans-serif;
   }
 
   body {
-    @apply overflow-x-hidden;
+    @apply overflow-x-hidden max-w-[100vw];
   }
 
   a, button {

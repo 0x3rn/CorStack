@@ -3,6 +3,7 @@ import ContactForm from '../components/ContactForm';
 import ClientPricing from '../components/ClientPricing';
 import { DynamicIcon } from '../components/DynamicIcon';
 import { getPublicContent } from '../lib/db/content';
+import { XCircle, PenTool, Smartphone, Zap, Rocket, LifeBuoy, CheckCircle, ExternalLink, ChevronDown } from 'lucide-react';
 
 export const revalidate = 60; // Revalidate every minute if using statically generated layout
 
@@ -97,19 +98,19 @@ export default async function HomePage() {
             
             <ul className="problem-list" style={{ marginTop: '1rem' }}>
               <li>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-[0.2rem]" />
                 <span><strong>Slow loading speeds & Outdated design:</strong> Visitors land on your site but leave without contacting you.</span>
               </li>
               <li>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-[0.2rem]" />
                 <span><strong>Poor mobile design & experience:</strong> Hard to read, click, or navigate on smartphones.</span>
               </li>
               <li>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-[0.2rem]" />
                 <span><strong>Low visibility on search engines:</strong> Buried on page 5 of search results where no potential clients are looking.</span>
               </li>
               <li>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <XCircle className="w-5 h-5 text-red-500 shrink-0 mt-[0.2rem]" />
                 <span><strong>Your website not reflecting the quality of your work/brand.</strong></span>
               </li>
             </ul>
@@ -127,37 +128,37 @@ export default async function HomePage() {
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1400px] mx-auto">
           <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            <PenTool />
             <h3 className="card-title">Custom Built</h3>
             <p className="card-text">Every website is tailored to your goals, audience, and brand identity.</p>
           </article>
 
           <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+            <Smartphone />
             <h3 className="card-title">Mobile First</h3>
             <p className="card-text">Your website will look and perform beautifully on phones, tablets, and desktops.</p>
           </article>
 
           <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            <Zap />
             <h3 className="card-title">Fast Performance</h3>
             <p className="card-text">Optimized for speed, usability, and a smooth browsing experience.</p>
           </article>
 
           <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <Rocket />
             <h3 className="card-title">SEO Ready</h3>
             <p className="card-text">Built with clean structure and best practices that help search engines understand your content.</p>
           </article>
 
           <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+            <LifeBuoy />
             <h3 className="card-title">Ongoing Support</h3>
             <p className="card-text">We&apos;re available after launch to assist with updates, maintenance, and future improvements.</p>
           </article>
 
           <article className="feature-card">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <CheckCircle />
             <h3 className="card-title">Clear Pricing</h3>
             <p className="card-text">No hidden costs, confusing packages, or unexpected invoices.</p>
           </article>
@@ -221,7 +222,7 @@ export default async function HomePage() {
                   {item.websiteUrl && (
                     <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-bold text-accent-primary hover:underline mt-auto">
                       Visit Website
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                      <ExternalLink className="w-4 h-4" />
                     </a>
                   )}
                 </div>
@@ -280,7 +281,7 @@ export default async function HomePage() {
             <summary className="flex justify-between items-center font-bold text-lg list-none outline-none [&::-webkit-details-marker]:hidden">
               How long does a project take?
               <span className="transition-transform duration-300 group-open:rotate-180 text-accent-primary shrink-0 ml-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <ChevronDown className="w-6 h-6" />
               </span>
             </summary>
             <p className="mt-4 text-text-muted leading-relaxed">
@@ -292,7 +293,7 @@ export default async function HomePage() {
             <summary className="flex justify-between items-center font-bold text-lg list-none outline-none [&::-webkit-details-marker]:hidden">
               Will my website work on mobile devices?
               <span className="transition-transform duration-300 group-open:rotate-180 text-accent-primary shrink-0 ml-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <ChevronDown className="w-6 h-6" />
               </span>
             </summary>
             <p className="mt-4 text-text-muted leading-relaxed">
@@ -304,7 +305,7 @@ export default async function HomePage() {
             <summary className="flex justify-between items-center font-bold text-lg list-none outline-none [&::-webkit-details-marker]:hidden">
               Can I update the website myself?
               <span className="transition-transform duration-300 group-open:rotate-180 text-accent-primary shrink-0 ml-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <ChevronDown className="w-6 h-6" />
               </span>
             </summary>
             <p className="mt-4 text-text-muted leading-relaxed">
@@ -316,7 +317,7 @@ export default async function HomePage() {
             <summary className="flex justify-between items-center font-bold text-lg list-none outline-none [&::-webkit-details-marker]:hidden">
               Do you provide hosting?
               <span className="transition-transform duration-300 group-open:rotate-180 text-accent-primary shrink-0 ml-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <ChevronDown className="w-6 h-6" />
               </span>
             </summary>
             <p className="mt-4 text-text-muted leading-relaxed">
@@ -328,7 +329,7 @@ export default async function HomePage() {
             <summary className="flex justify-between items-center font-bold text-lg list-none outline-none [&::-webkit-details-marker]:hidden">
               What happens after launch?
               <span className="transition-transform duration-300 group-open:rotate-180 text-accent-primary shrink-0 ml-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <ChevronDown className="w-6 h-6" />
               </span>
             </summary>
             <p className="mt-4 text-text-muted leading-relaxed">
@@ -340,7 +341,7 @@ export default async function HomePage() {
             <summary className="flex justify-between items-center font-bold text-lg list-none outline-none [&::-webkit-details-marker]:hidden">
               Do I need to provide the content?
               <span className="transition-transform duration-300 group-open:rotate-180 text-accent-primary shrink-0 ml-4">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <ChevronDown className="w-6 h-6" />
               </span>
             </summary>
             <p className="mt-4 text-text-muted leading-relaxed">
