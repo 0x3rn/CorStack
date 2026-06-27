@@ -83,11 +83,15 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({
+import { getPublicContent } from '../lib/db/content';
+
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { settings } = await getPublicContent();
+
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
       <body className="overflow-x-hidden">
@@ -130,7 +134,7 @@ export default function RootLayout({
           <div className="flex flex-col min-h-screen overflow-x-hidden w-full">
             <Header />
             {children}
-            <Footer />
+            <Footer settings={settings} />
           </div>
         </SmoothScroll>
       </body>

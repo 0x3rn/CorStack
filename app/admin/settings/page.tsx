@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { auth } from '../../../lib/firebase';
-import { usePricing } from '../../../hooks/usePricing';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export default function SettingsPage() {
-  const { settings } = usePricing();
   const [user, authLoading] = useAuthState(auth);
   const router = useRouter();
   
@@ -45,13 +43,19 @@ export default function SettingsPage() {
 
   // Load initial data
   useEffect(() => {
-    if (settings.general) {
-      setGeneral(prev => ({ ...prev, ...settings.general }));
-    }
-    if (settings.contact) {
-      setContact(prev => ({ ...prev, ...settings.contact }));
-    }
-  }, [settings]);
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        const { settings } = data;
+        if (settings?.general) {
+          setGeneral(prev => ({ ...prev, ...settings.general }));
+        }
+        if (settings?.contact) {
+          setContact(prev => ({ ...prev, ...settings.contact }));
+        }
+      })
+      .catch(err => console.error("Failed to load settings:", err));
+  }, []);
 
   const handleSave = async (docId: 'general' | 'contact', data: any) => {
     setLoading(true);

@@ -1,22 +1,14 @@
-"use client";
-
-import { useState } from 'react';
 import Link from 'next/link';
-import { usePricing } from '../hooks/usePricing';
 import ContactForm from '../components/ContactForm';
-import ProjectModal from '../components/ProjectModal';
+import ClientPricing from '../components/ClientPricing';
 import { DynamicIcon } from '../components/DynamicIcon';
+import { getPublicContent } from '../lib/db/content';
 
-export default function HomePage() {
-  const { currency, symbol, pricingTiers, portfolioItems, servicesItems, clientTypes, processItems, settings, isLoaded } = usePricing();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedTier, setSelectedTier] = useState('');
+export const revalidate = 60; // Revalidate every minute if using statically generated layout
 
-  const handleBuyClick = (tier: string, priceText: string) => {
-    const formattedPrice = priceText.split('-')[0].trim().replace(/^[\$₦]/, '');
-    setSelectedTier(`${tier} (Starting from ${symbol}${formattedPrice})`);
-    setIsModalOpen(true);
-  };
+export default async function HomePage() {
+  const content = await getPublicContent();
+  const { pricing, portfolio, services, clientTypes, process, settings } = content;
 
   return (
     <>
@@ -66,12 +58,7 @@ export default function HomePage() {
         </div>
 
         <p className="hero-trust">
-          {/* <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> */}
-          <span>Fast Delivery | Mobile Optimized |Transparent Pricing</span>
+          <span>Fast Delivery | Mobile Optimized | Transparent Pricing</span>
         </p>
       </section>
 
@@ -185,8 +172,8 @@ export default function HomePage() {
         </div>
         
         <div className="features-grid">
-          {servicesItems && servicesItems.length > 0 ? (
-            servicesItems.map(service => (
+          {services && services.length > 0 ? (
+            services.map(service => (
               <article key={service.id || service.title} className="feature-card">
                 <DynamicIcon name={service.iconName} size={32} />
                 <h3 className="card-title">{service.title}</h3>
@@ -209,8 +196,8 @@ export default function HomePage() {
         </div>
         
         <div className="portfolio-grid">
-          {portfolioItems && portfolioItems.length > 0 ? (
-            portfolioItems.map(item => (
+          {portfolio && portfolio.length > 0 ? (
+            portfolio.map(item => (
               <article key={item.id} className="portfolio-card">
                 <img src={item.imageUrl} alt={item.title} />
                 <div className="portfolio-info flex flex-col gap-3">
@@ -243,8 +230,8 @@ export default function HomePage() {
         </div>
         
         <ol className="process-steps">
-          {processItems && processItems.length > 0 ? (
-            processItems.map(step => (
+          {process && process.length > 0 ? (
+            process.map(step => (
               <li key={step.id || step.title} className="step-item">
                 <h4 className="step-title">{step.title}</h4>
                 <p className="step-text">{step.description}</p>
@@ -265,55 +252,7 @@ export default function HomePage() {
           <p className="section-subtitle">Choose the option that best fits your needs, or contact us for a custom quote tailored to your project.</p>
         </div>
 
-        <div className="pricing-grid">
-          {pricingTiers && pricingTiers.length > 0 ? (
-            pricingTiers.map(tier => (
-              <article key={tier.id} className={`pricing-card ${tier.isPopular ? 'popular-tier' : ''}`}>
-                {tier.isPopular && <span className="badge">Most Popular</span>}
-                <h3 className="pricing-name">{tier.name}</h3>
-                <p className="pricing-desc">{tier.desc}</p>
-                <h4 id={`price-${tier.id}`} className="pricing-price">
-                  {isLoaded ? (
-                    <>
-                      <span className="block text-[0.85rem] font-extrabold tracking-[0.15em] uppercase mb-1 text-accent-primary">Starting from</span>
-                      {symbol}{(currency === 'usd' ? tier.priceUsd : tier.priceNgn).split('-')[0].trim().replace(/^[\$₦]/, '')}
-                    </>
-                  ) : (
-                    <span className={`block h-[48px] w-[180px] ${tier.isPopular ? 'bg-white/20' : 'bg-black/10'} animate-pulse rounded-md`}></span>
-                  )}
-                </h4>
-                <ul className="pricing-features">
-                  {tier.features.map((feature, idx) => (
-                    <li key={idx}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"></polyline></svg> {feature}</li>
-                  ))}
-                </ul>
-                <div className="mt-auto">
-                  {isLoaded ? (
-                    <button onClick={() => handleBuyClick(tier.name, currency === 'usd' ? tier.priceUsd : tier.priceNgn)} className={`btn block-btn ${tier.isPopular ? 'btn-primary inverse-btn' : 'btn-dark'}`}>
-                      Start Project
-                    </button>
-                  ) : (
-                    <div className={`h-[64px] w-full ${tier.isPopular ? 'bg-white/20' : 'bg-black/10'} animate-pulse rounded-btn`}></div>
-                  )}
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500 py-12">
-              Pricing tiers will appear here once added in the admin dashboard.
-            </div>
-          )}
-        </div>
-
-        {/* <div className="centered" style={{ marginTop: '4.5rem', padding: '0 1rem' }}>
-          <p className="section-text" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: 'var(--text-main)', lineHeight: '1.8' }}>
-            <span style={{ fontWeight: 700, fontSize: 'clamp(1.15rem, 3vw, 1.35rem)', display: 'block', marginBottom: '0.5rem' }}>Need Something Smaller?</span>
-            Not every project requires a large website. If you're looking for a portfolio, landing page, digital resume, event website, or waitlist page, we can create a streamlined solution that fits your goals and budget.
-            <span style={{ display: 'block', marginTop: '1.5rem' }}>
-              <Link href="#contact" className="text-accent-primary" style={{fontWeight: 700, textDecoration: 'underline' }}>Get a budget-friendly custom quote &rarr;</Link>
-            </span>
-          </p>
-        </div> */}
+        <ClientPricing pricingTiers={pricing} />
       </section>
 
       <section id="faq" className="features-section" style={{ backgroundColor: 'var(--color-bg-light)', paddingBottom: '6rem' }}>
@@ -403,13 +342,6 @@ export default function HomePage() {
         <p className="cta-subtitle">Fill out the form below and we&apos;ll get back to you within 24 hours.</p>
         <ContactForm />
       </section>
-
-      <ProjectModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        tier={selectedTier} 
-        currency={currency} 
-      />
     </>
   );
 }
