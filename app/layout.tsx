@@ -94,6 +94,9 @@ export default async function RootLayout({
 
   return (
     <html lang="en" className={`${plusJakartaSans.variable}`}>
+      <head>
+        <link rel="preload" as="image" href="/logo.png" />
+      </head>
       <body className="overflow-x-hidden">
         <NextTopLoader 
           color="#0055cc" 

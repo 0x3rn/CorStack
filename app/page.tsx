@@ -11,7 +11,7 @@ export default async function HomePage() {
   const { pricing, portfolio, services, clientTypes, process, settings } = content;
 
   return (
-    <>
+    <div className="w-full">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -47,9 +47,9 @@ export default async function HomePage() {
           </div>
         )}
         <span className="hero-eyebrow">Custom Web Design & Development</span>
-        <h1 className="hero-title">{settings?.general?.heroHeadline || "Your Next Website Should Do More Than Look Good."}</h1>
+        <h1 className="hero-title">{settings?.general?.heroHeadline}</h1>
         <p className="hero-subtitle">
-          {settings?.general?.heroSubtitle || "Custom websites designed for brands, creators, startups, professionals, and organizations that want to make a stronger impression online. We combine thoughtful design, modern development, and user-focused strategy to create websites that are fast, engaging, and built around your goals."}
+          {settings?.general?.heroSubtitle}
         </p>
         
         <div className="hero-actions">
@@ -342,6 +342,6 @@ export default async function HomePage() {
         <p className="cta-subtitle">Fill out the form below and we&apos;ll get back to you within 24 hours.</p>
         <ContactForm />
       </section>
-    </>
+    </div>
   );
 }
