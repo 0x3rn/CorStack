@@ -44,6 +44,15 @@
     @apply max-w-full block;
   }
 
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
   a {
     @apply no-underline transition-all duration-500 ease-premium;
     color: inherit;

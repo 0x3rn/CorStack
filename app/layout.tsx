@@ -17,7 +17,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   metadataBase: new URL('https://corstack.dev'),
   title: {
-    default: 'Corstack | Top Web Design Agency in Lagos, Nigeria',
+    default: 'Corstack',
     template: '%s | Corstack'
   },
   description: 'Corstack is a premium web design and development agency in Lagos, Nigeria. We build stunning, fast, and conversion-driven websites tailored for modern brands. Hire the best frontend developers and web designers.',

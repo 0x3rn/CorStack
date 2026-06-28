@@ -1,0 +1,222 @@
+{
+  "pricing": [
+    {
+      "name": "Custom",
+      "desc": "Advanced websites built for organizations that require custom functionality, scalability, and e-commerce capabilities.",
+      "priceUsd": "1,500 - $2,500",
+      "priceNgn": "1,500,000 - ₦2,500,000",
+      "features": [
+        "Everything in Professional",
+        "Unlimited Scalable Pages",
+        "Online Store Setup",
+        "Custom API Integrations",
+        "Membership & Booking Systems",
+        "Secure Payment Gateways",
+        "Client Dashboards & Portals",
+        "Advanced Security Configuration",
+        "Dedicated Project Support",
+        "90 Days Free Post-Launch Support"
+      ],
+      "isPopular": false,
+      "order": 3
+    },
+    {
+      "name": "Professional",
+      "desc": "Built for brands and organizations that want to generate more leads and establish authority online.",
+      "priceUsd": "600 - $1,000",
+      "priceNgn": "600,000 - ₦1,000,000",
+      "features": [
+        "Everything in Growth",
+        "Up to 10 Custom Pages",
+        "Advanced SEO Strategy",
+        "Lead Capture Funnels",
+        "Blog / CMS Setup",
+        "Performance Optimization",
+        "Priority Email Support",
+        "3 Rounds of Revisions",
+        "Delivery in 14 Days"
+      ],
+      "isPopular": true,
+      "order": 2
+    },
+    {
+      "name": "Growth",
+      "desc": "Ideal for startups and local shops needing a professional online presence.",
+      "priceUsd": "300 - $450",
+      "priceNgn": "350,000 - ₦500,000",
+      "features": [
+        "Everything in Launch",
+        "Up to 5 Custom Pages",
+        "Custom Brand Integration",
+        "Newsletter Sign-up Form",
+        "WhatsApp / Live Chat Widget",
+        "Google Maps Integration",
+        "Website Training & Handover",
+        "1 Round of Revisions",
+        "Delivery in 7 Days"
+      ],
+      "isPopular": false,
+      "order": 1
+    },
+    {
+      "name": "Launch",
+      "desc": "Perfect for personal brands, events, product launches, waitlists, and simple online presences.",
+      "priceNgn": "150,000 - ₦250,000",
+      "features": [
+        "Up to 2 Pages",
+        "Mobile Responsive Design",
+        "Basic SEO Setup",
+        "Contact Form Integration",
+        "Analytics Integration",
+        "SSL Security",
+        "Social Media Links",
+        "Launch Assistance",
+        "Delivery in 2-3 Days"
+      ],
+      "isPopular": false,
+      "order": 0,
+      "priceUsd": "150 - $250"
+    }
+  ],
+  "portfolio": [
+    {
+      "title": "Vera",
+      "description": "We built a high-performance, conversion-optimized landing page for Vera, showcasing their tech consulting services with sleek modern aesthetics and lightning-fast load times.",
+      "order": 0,
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/screencapture-verahq-xyz-2026-06-27-16_11_39.png?alt=media&token=3e14722c-3931-41b5-a708-f1ea0085d353",
+      "category": "SaaS | Contract Risk Scanner",
+      "imageUrls": [
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/screencapture-verahq-xyz-2026-06-27-16_11_39.png?alt=media&token=3e14722c-3931-41b5-a708-f1ea0085d353",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/vera%20dashboard.png?alt=media&token=60b4b373-a44a-4fc4-a859-4e8ba05630ae",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/vera%20reports.png?alt=media&token=538ef64a-aec1-4737-ac2a-f1f11ccddca6",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/vera%20reports%20analysis.png?alt=media&token=26f1a46a-d1de-48aa-a774-5da5ee42b269",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/vera%20risk%20library.png?alt=media&token=daa2c8a9-1eaa-4d13-a95e-e43c52ad6aaa"
+      ]
+    },
+    {
+      "order": 1,
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/luxe%20hotel.png?alt=media&token=b3459065-9ca7-4efe-b864-05dd89c52d08",
+      "description": "",
+      "category": "Hospitality",
+      "title": "Luxe Hotel",
+      "imageUrls": [
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/luxe%20hotel.png?alt=media&token=b3459065-9ca7-4efe-b864-05dd89c52d08",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/luxe%20rooms.png?alt=media&token=8a550428-5616-4ca2-9be6-50c70776824b",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/luxe%20room%20booking.png?alt=media&token=b50f7bde-6424-41da-ba2b-96b4750f222d",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/luxe%20hotel%20dining.png?alt=media&token=012e0f08-ed5d-442b-a82f-d9bd6e04c8e6",
+        "https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/luxe%20contact.png?alt=media&token=c43111ea-7c32-4187-826a-b4eeaed3a09a"
+      ]
+    },
+    {
+      "title": "Omnimart v2",
+      "category": "E-Commerce Setup",
+      "description": "An iteration on the Omnimart design system, focusing on bold typography and immersive product showcases.",
+      "imageUrls": [
+        "/omnimart.png"
+      ],
+      "order": 2
+    }
+  ],
+  "services": [
+    {
+      "title": "Website Development",
+      "description": "Modern, responsive, secure, fast, and scalable web applications built with the latest technologies.",
+      "iconName": "Code",
+      "order": 1
+    },
+    {
+      "title": "Website Redesigns",
+      "description": "Transform outdated websites into modern experiences that better represent your brand.",
+      "iconName": "RefreshCw",
+      "order": 2
+    },
+    {
+      "title": "Hosting & Maintenance",
+      "description": "Reliable hosting, security updates, backups, and ongoing technical support.",
+      "iconName": "Server",
+      "order": 3
+    },
+    {
+      "title": "Custom Website Design",
+      "description": "Unique, professionally crafted designs that help you stand out online.",
+      "iconName": "Layout",
+      "order": 0
+    }
+  ],
+  "clientTypes": [
+    {
+      "title": "Online Stores",
+      "description": "Turn visitors into customers with a shopping experience designed for potential customers.",
+      "iconName": "ShoppingCart",
+      "order": 3
+    },
+    {
+      "title": "Organizations & Nonprofits",
+      "description": "Communicate your mission clearly and connect with supporters, donors, volunteers and communities.",
+      "iconName": "HeartHandshake",
+      "order": 5
+    },
+    {
+      "title": "Small Businesses",
+      "description": "Build trust, generate inquiries, and create a seamless experience for potential customers.",
+      "iconName": "Building2",
+      "order": 2
+    },
+    {
+      "title": "Professionals & Consultants",
+      "description": "Position yourself as an authority in your field with a website that highlights your expertise and services.",
+      "iconName": "Briefcase",
+      "order": 4
+    },
+    {
+      "title": "Creators & Personal Brands",
+      "description": "Showcase your work, tell your story, and create a platform that reflects your unique identity.",
+      "iconName": "UserCircle",
+      "order": 1
+    },
+    {
+      "title": "Startups",
+      "description": "Launch with professional online presence that builds credibility from day one and helps you attract customers, investors, and partners.",
+      "iconName": "Rocket",
+      "order": 0
+    }
+  ],
+  "process": [
+    {
+      "title": "Design & Wireframing",
+      "description": "We create a visual direction and gather feedback to ensure everything aligns with your expectations.",
+      "order": 1
+    },
+    {
+      "title": "Discovery",
+      "description": "We learn about your goals, audience, requirements, and vision for the project.",
+      "order": 0
+    },
+    {
+      "title": "Testing & Launch",
+      "description": "We thoroughly test every aspect of the website to ensure it is bug-free and fully functional before launching it to ensure everything works flawlessly.",
+      "order": 3
+    },
+    {
+      "title": "Development",
+      "description": "The approved design is transformed into a fully functional, responsive website.",
+      "order": 2
+    }
+  ],
+  "settings": {
+    "general": {
+      "socialTwitter": "",
+      "socialInstagram": "",
+      "socialLinkedIn": "",
+      "isAcceptingProjects": false,
+      "heroHeadline": "Exceptional Websites for Brands and Professionals.",
+      "heroSubtitle": "We engineer high-performance digital platforms. From custom personal portfolios to robust corporate websites, we deliver tailored web solutions that command attention and drive measurable results."
+    },
+    "contact": {
+      "ngnPhone": "+234 800 000 0000",
+      "ngnEmail": "hello@corstack.dev",
+      "usdPhone": "+1 (234) 567-890",
+      "usdEmail": "hello@corstack.dev"
+    }
+  }
+}

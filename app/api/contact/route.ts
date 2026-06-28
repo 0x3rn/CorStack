@@ -96,19 +96,38 @@ export async function POST(req: Request) {
           </div>
           <div class="content">
             <div class="greeting">Hi ${clientFirstName},</div>
-            <div class="body-text">
-              Thanks for reaching out! This is a quick note to confirm that we've received your message.
-            </div>
-            <div class="body-text">
-              We typically review all inquiries within 24-48 hours. Someone from our team will get back to you shortly to discuss the next steps.
-            </div>
-            <div class="body-text">
-              If you have any urgent details to add, feel free to reply directly to this email.
-            </div>
+            ${type === 'project' 
+              ? `
+                <div class="body-text">
+                  Thanks for choosing Corstack! This is a quick note to confirm that we've received your project request.
+                </div>
+                <div class="body-text">
+                  We're excited to learn more about what you're building. We typically review all new project requests within 24 hours, and a project manager will get back to you shortly to discuss the next steps and set up an introductory call.
+                </div>
+                <div class="body-text">
+                  If you have any urgent details, links, or documents to share in the meantime, feel free to reply directly to this email.
+                </div>
+              `
+              : `
+                <div class="body-text">
+                  Thanks for reaching out! This is a quick note to confirm that we've received your message.
+                </div>
+                <div class="body-text">
+                  We typically review all inquiries within 24-48 hours. Someone from our team will get back to you shortly to discuss the next steps.
+                </div>
+                <div class="body-text">
+                  If you have any urgent details to add, feel free to reply directly to this email.
+                </div>
+              `
+            }
             
-            <div class="message-summary">
-              <div class="message-summary-title">A copy of your message:</div>
-              <em>${formattedMessage}</em>
+            <div class="message-summary" style="margin-top: 32px; background: #f8fafc; padding: 24px; border-radius: 8px; border: 1px solid #e2e8f0;">
+              <div class="message-summary-title" style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
+                Your ${type === 'project' ? 'Project Details' : 'Message'}:
+              </div>
+              <div style="font-size: 14px; line-height: 1.6; color: #334155;">
+                ${formattedMessage}
+              </div>
             </div>
           </div>
           <div class="footer">

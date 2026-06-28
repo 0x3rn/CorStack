@@ -29,6 +29,7 @@ export default function AdminPortfolioPage() {
   
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [linkInput, setLinkInput] = useState("");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -66,6 +67,7 @@ export default function AdminPortfolioPage() {
       category: '',
       description: '',
       imageUrl: '',
+      imageUrls: [],
       websiteUrl: '',
       order: items.length
     });
@@ -75,6 +77,12 @@ export default function AdminPortfolioPage() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !currentItem) return;
+    
+    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    if (currentUrls.length >= 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
+    }
 
     const storageRef = ref(storage, `portfolio/${Date.now()}_${file.name}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
@@ -91,24 +99,81 @@ export default function AdminPortfolioPage() {
       }, 
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setCurrentItem({ ...currentItem, imageUrl: downloadURL });
+        const updatedUrls = [...currentUrls, downloadURL];
+        setCurrentItem({ ...currentItem, imageUrl: updatedUrls[0], imageUrls: updatedUrls });
         setIsUploading(false);
         setUploadProgress(0);
         toast.success("Image uploaded!");
+        
+        // Reset file input
+        if (e.target) e.target.value = '';
       }
     );
   };
 
+  const handleAddLink = () => {
+    if (!linkInput.trim() || !currentItem) return;
+    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    if (currentUrls.length >= 5) {
+      toast.error("Maximum 5 images allowed");
+      return;
+    }
+    const updatedUrls = [...currentUrls, linkInput.trim()];
+    setCurrentItem({ ...currentItem, imageUrl: updatedUrls[0], imageUrls: updatedUrls });
+    setLinkInput("");
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    if (!currentItem) return;
+    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    const updatedUrls = currentUrls.filter((_, idx) => idx !== indexToRemove);
+    setCurrentItem({ 
+      ...currentItem, 
+      imageUrl: updatedUrls.length > 0 ? updatedUrls[0] : '', 
+      imageUrls: updatedUrls 
+    });
+  };
+
+  const moveImage = (index: number, direction: 'left' | 'right') => {
+    if (!currentItem) return;
+    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    const newIndex = direction === 'left' ? index - 1 : index + 1;
+    
+    if (newIndex < 0 || newIndex >= currentUrls.length) return;
+    
+    const updatedUrls = [...currentUrls];
+    const temp = updatedUrls[index];
+    updatedUrls[index] = updatedUrls[newIndex];
+    updatedUrls[newIndex] = temp;
+    
+    setCurrentItem({ 
+      ...currentItem, 
+      imageUrl: updatedUrls[0], 
+      imageUrls: updatedUrls 
+    });
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentItem || !user) return;
-    if (!currentItem.imageUrl) return toast.error("Please provide an image link or upload one");
+    if (!currentItem) return;
+
+    let finalItem = { ...currentItem };
+    const currentUrls = finalItem.imageUrls || (finalItem.imageUrl ? [finalItem.imageUrl] : []);
+    
+    // Auto-consume dangling input link if they forgot to click "Add"
+    if (linkInput.trim() && currentUrls.length < 5) {
+      const updatedUrls = [...currentUrls, linkInput.trim()];
+      finalItem = { ...finalItem, imageUrl: updatedUrls[0], imageUrls: updatedUrls };
+      setLinkInput("");
+    }
+
+    const finalUrls = finalItem.imageUrls || (finalItem.imageUrl ? [finalItem.imageUrl] : []);
+    if (finalUrls.length === 0) return toast.error("Please provide at least one image");
     
     setIsSaving(true);
     
     try {
       // Auto-format websiteUrl
-      let finalItem = { ...currentItem };
       if (finalItem.websiteUrl && !finalItem.websiteUrl.startsWith('http://') && !finalItem.websiteUrl.startsWith('https://')) {
         finalItem.websiteUrl = 'https://' + finalItem.websiteUrl;
       }
@@ -211,34 +276,78 @@ export default function AdminPortfolioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold mb-2">Portfolio Image</label>
-            <div className="flex gap-4 items-start">
-              {currentItem.imageUrl && (
-                <img src={currentItem.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded-lg border border-black/10 shrink-0 mt-2" />
+            <label className="block text-sm font-semibold mb-2">Portfolio Images (Max 5)</label>
+            <div className="flex flex-col gap-4">
+              {(currentItem.imageUrls?.length || 0) > 0 || currentItem.imageUrl ? (
+                <div className="grid grid-cols-5 gap-3">
+                  {(currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : [])).map((url, idx) => (
+                    <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 aspect-square">
+                      <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button 
+                        type="button" 
+                        onClick={() => removeImage(idx)}
+                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        &times;
+                      </button>
+                      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {idx > 0 && (
+                          <button type="button" onClick={() => moveImage(idx, 'left')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">
+                            ←
+                          </button>
+                        )}
+                        {idx < ((currentItem.imageUrls?.length || (currentItem.imageUrl ? 1 : 0)) - 1) && (
+                          <button type="button" onClick={() => moveImage(idx, 'right')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">
+                            →
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {((currentItem.imageUrls?.length || 0) < 5) && (
+                <div className="flex-1 flex flex-col gap-4 p-4 border border-dashed rounded-xl bg-gray-50">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Option 1: Paste an Image Link</label>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        placeholder="https://example.com/image.png" 
+                        className="flex-1 py-2 px-3 border rounded-lg text-sm bg-white" 
+                        value={linkInput}
+                        onChange={e => setLinkInput(e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddLink();
+                          }
+                        }}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={handleAddLink}
+                        className="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
+                      >
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Option 2: Upload from Computer</label>
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploading}
+                      className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black disabled:opacity-50"
+                    />
+                  </div>
+                  {isUploading && <div className="text-xs text-accent-primary mt-1 font-semibold">Uploading: {Math.round(uploadProgress)}%</div>}
+                </div>
               )}
-              <div className="flex-1 flex flex-col gap-4">
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Option 1: Paste an Image Link</label>
-                  <input 
-                    type="text" 
-                    placeholder="https://example.com/image.png" 
-                    className="w-full py-2 px-3 border rounded-lg text-sm bg-gray-50" 
-                    value={currentItem.imageUrl} 
-                    onChange={e => setCurrentItem({...currentItem, imageUrl: e.target.value})} 
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-xs text-gray-500 mb-1">Option 2: Upload from Computer</label>
-                  <input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black"
-                  />
-                </div>
-                {isUploading && <div className="text-xs text-accent-primary mt-1 font-semibold">Uploading: {Math.round(uploadProgress)}%</div>}
-              </div>
             </div>
           </div>
           
@@ -251,7 +360,7 @@ export default function AdminPortfolioPage() {
           {items.map(item => (
             <div key={item.id} className="bg-white rounded-xl shadow-soft p-6 border border-black/5 flex justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <img src={item.imageUrl} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
+                <img src={item.imageUrls?.[0] || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
                 <div>
                   <h3 className="font-bold text-lg">{item.title}</h3>
                   <p className="text-sm text-text-muted mt-1">{item.category}</p>

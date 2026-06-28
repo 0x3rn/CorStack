@@ -14,7 +14,9 @@ export interface PortfolioItem {
   title: string;
   category: string;
   description?: string;
-  imageUrl: string;
+  imageUrl?: string;
+  imageUrls?: string[];
+  description?: string;
   websiteUrl?: string;
   order: number;
 }

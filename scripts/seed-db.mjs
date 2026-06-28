@@ -1,6 +1,7 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-
+import fs from 'fs';
+import path from 'path';
 
 const serviceAccount = {
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -14,14 +15,15 @@ const app = getApps().length === 0 ? initializeApp({
 
 const db = getFirestore(app);
 
-const pricingTiers = [
+// Default hardcoded seed data
+let pricingTiers = [
   {
     name: 'Launch',
     desc: 'Perfect for personal brands, events, product launches, waitlists, and simple online presences.',
-    priceUsd: '100 - $250',
+    priceUsd: '150 - $250',
     priceNgn: '150,000 - ₦250,000',
     features: [
-      'Up to 2 Pages',
+      'Single Page Design (Landing Page)',
       'Mobile Responsive Design',
       'Basic SEO Setup',
       'Contact Form Integration',
@@ -41,52 +43,52 @@ const pricingTiers = [
     priceNgn: '350,000 - ₦500,000',
     features: [
       'Everything in Launch',
-      'Up to 5 Custom Pages',
-      'Custom Brand Integration',
-      'Newsletter Sign-up Form',
-      'WhatsApp / Live Chat Widget',
-      'Google Maps Integration',
-      'Website Training & Handover',
-      '1 Round of Revisions',
-      'Delivery in 7 Days'
+      'Up to 5 Pages (Home, About, Services, Contact, etc.)',
+      'CMS Setup (Content Management)',
+      'Blog Integration',
+      'Lead Generation Forms',
+      'Newsletter Integration',
+      'Basic Performance Optimization',
+      '30 Days Free Post-Launch Support',
+      'Delivery in 1-2 Weeks'
     ],
-    isPopular: false,
+    isPopular: true,
     order: 1
   },
   {
-    name: 'Professional',
-    desc: 'Built for brands and organizations that want to generate more leads and establish authority online.',
-    priceUsd: '600 - $1,000',
-    priceNgn: '600,000 - ₦1,000,000',
+    name: 'Scale',
+    desc: 'For established businesses looking to scale their operations with advanced functionality.',
+    priceUsd: '500 - $800+',
+    priceNgn: '650,000 - ₦1,000,000+',
     features: [
       'Everything in Growth',
-      'Up to 10 Custom Pages',
+      'Up to 10 Pages',
+      'E-commerce Integration (Up to 50 products)',
+      'Payment Gateway Setup',
+      'Custom Animations & Interactions',
       'Advanced SEO Strategy',
-      'Lead Capture Funnels',
-      'Blog / CMS Setup',
-      'Performance Optimization',
-      'Priority Email Support',
-      '3 Rounds of Revisions',
-      'Delivery in 14 Days'
+      'Custom API Integrations',
+      'Priority Support',
+      '60 Days Free Post-Launch Support',
+      'Delivery in 2-4 Weeks'
     ],
-    isPopular: true,
+    isPopular: false,
     order: 2
   },
   {
-    name: 'Custom',
-    desc: 'Advanced websites built for organizations that require custom functionality, scalability, and e-commerce capabilities.',
-    priceUsd: '1,500 - $2,500',
-    priceNgn: '1,500,000 - ₦2,500,000',
+    name: 'Enterprise',
+    desc: 'Custom solutions for large organizations with complex requirements and high traffic.',
+    priceUsd: '1,500+',
+    priceNgn: '2,000,000+',
     features: [
-      'Everything in Professional',
-      'Unlimited Scalable Pages',
-      'Online Store Setup',
-      'Custom API Integrations',
-      'Membership & Booking Systems',
-      'Secure Payment Gateways',
-      'Client Dashboards & Portals',
-      'Advanced Security Configuration',
-      'Dedicated Project Support',
+      'Custom Web App Development',
+      'Unlimited Pages',
+      'Advanced E-commerce (1000+ products)',
+      'Complex Database Architecture',
+      'Custom Admin Dashboards',
+      'Third-party Software Integrations',
+      'High-Performance Architecture',
+      'Dedicated Account Manager',
       '90 Days Free Post-Launch Support'
     ],
     isPopular: false,
@@ -94,133 +96,152 @@ const pricingTiers = [
   }
 ];
 
-const portfolioItems = [
+let portfolioItems = [
   {
     title: 'Vera',
     category: 'SaaS | Tech Consulting Firm',
-    imageUrl: '/hirehook.png',
+    description: 'We built a high-performance, conversion-optimized landing page for Vera, showcasing their tech consulting services with sleek modern aesthetics and lightning-fast load times.',
+    imageUrls: ['/hirehook.png'],
     order: 0
   },
   {
     title: 'Omnimart',
     category: 'E-Commerce Setup',
-    imageUrl: '/omnimart.png',
+    description: 'A complete e-commerce storefront designed to maximize sales. Features include advanced product filtering, seamless checkout flows, and a mobile-first shopping experience.',
+    imageUrls: ['/omnimart.png'],
     order: 1
   },
   {
-    title: 'Omnimart',
+    title: 'Omnimart v2',
     category: 'E-Commerce Setup',
-    imageUrl: '/omnimart.png',
+    description: 'An iteration on the Omnimart design system, focusing on bold typography and immersive product showcases.',
+    imageUrls: ['/omnimart.png'],
     order: 2
   }
 ];
 
-const servicesItems = [
+let servicesItems = [
   {
     title: 'Custom Website Design',
-    description: 'Unique, professionally crafted designs that help you stand out online.',
-    iconName: 'Layout',
+    desc: 'Bespoke designs tailored to your brand identity. We craft unique, modern, and engaging interfaces that captivate your audience.',
+    icon: 'layout',
     order: 0
   },
   {
-    title: 'Website Development',
-    description: 'Modern, responsive, secure, fast, and scalable web applications built with the latest technologies.',
-    iconName: 'Code',
+    title: 'E-Commerce Development',
+    desc: 'Robust online stores built for conversion. From product catalogs to secure checkout, we handle the entire shopping experience.',
+    icon: 'shopping-cart',
     order: 1
   },
   {
-    title: 'Website Redesigns',
-    description: 'Transform outdated websites into modern experiences that better represent your brand.',
-    iconName: 'RefreshCw',
+    title: 'Web App Development',
+    desc: 'Complex, interactive web applications built with modern frameworks. We turn your innovative ideas into powerful software.',
+    icon: 'code',
     order: 2
   },
   {
-    title: 'Hosting & Maintenance',
-    description: 'Reliable hosting, security updates, backups, and ongoing technical support.',
-    iconName: 'Server',
+    title: 'SEO Optimization',
+    desc: 'Data-driven strategies to improve your search rankings. We optimize site structure, speed, and content for maximum visibility.',
+    icon: 'search',
     order: 3
   }
 ];
 
-const clientTypesItems = [
+let clientTypesItems = [
   {
     title: 'Startups',
-    description: 'Launch with professional online presence that builds credibility from day one and helps you attract customers, investors, and partners.',
-    iconName: 'Rocket',
+    desc: 'Agile and innovative solutions to help new ventures establish a strong digital footprint quickly.',
     order: 0
   },
   {
-    title: 'Creators & Personal Brands',
-    description: 'Showcase your work, tell your story, and create a platform that reflects your unique identity.',
-    iconName: 'UserCircle',
+    title: 'E-Commerce',
+    desc: 'Scalable platforms designed to drive sales, manage inventory, and provide a seamless shopping experience.',
     order: 1
   },
   {
-    title: 'Small Businesses',
-    description: 'Build trust, generate inquiries, and create a seamless experience for potential customers.',
-    iconName: 'Building2',
+    title: 'Agencies',
+    desc: 'White-label development and robust technical partnerships to help agencies scale their service offerings.',
     order: 2
   },
   {
-    title: 'Online Stores',
-    description: 'Turn visitors into customers with a shopping experience designed for potential customers.',
-    iconName: 'ShoppingCart',
+    title: 'Enterprises',
+    desc: 'Secure, high-performance web applications tailored for complex organizational workflows.',
     order: 3
-  },
-  {
-    title: 'Professionals & Consultants',
-    description: 'Position yourself as an authority in your field with a website that highlights your expertise and services.',
-    iconName: 'Briefcase',
-    order: 4
-  },
-  {
-    title: 'Organizations & Nonprofits',
-    description: 'Communicate your mission clearly and connect with supporters, donors, volunteers and communities.',
-    iconName: 'HeartHandshake',
-    order: 5
   }
 ];
 
-const processItems = [
+let processItems = [
   {
-    title: 'Discovery',
-    description: 'We learn about your goals, audience, requirements, and vision for the project.',
+    step: '1',
+    title: 'Discovery & Strategy',
+    desc: 'We start by understanding your goals, target audience, and unique requirements to formulate a comprehensive project roadmap.',
     order: 0
   },
   {
-    title: 'Design & Wireframing',
-    description: 'We create a visual direction and gather feedback to ensure everything aligns with your expectations.',
+    step: '2',
+    title: 'UI/UX Design',
+    desc: 'Our design team creates wireframes and high-fidelity mockups, ensuring an intuitive and visually stunning user experience.',
     order: 1
   },
   {
+    step: '3',
     title: 'Development',
-    description: 'The approved design is transformed into a fully functional, responsive website.',
+    desc: 'We bring the designs to life using clean, scalable code and the latest web technologies for optimal performance.',
     order: 2
   },
   {
+    step: '4',
     title: 'Testing & Launch',
-    description: 'We thoroughly test every aspect of the website to ensure it is bug-free and fully functional before launching it to ensure everything works flawlessly.',
+    desc: 'Rigorous quality assurance across devices and browsers guarantees a flawless product ready for a successful launch.',
     order: 3
   }
 ];
 
-const generalSettings = {
-  heroHeadline: 'Designed With Purpose. Built for Results.',
-  heroSubtitle: "Whether you're launching a startup, growing a personal brand, running an organization, selling products online, or upgrading an existing presence, your website should represent you professionally and help you achieve your goals. We build digital experiences tailored to your goals.",
-  isAcceptingProjects: true,
-  socialTwitter: '',
-  socialInstagram: '',
-  socialLinkedIn: ''
+let generalSettings = {
+  heroTitle: 'Crafting Digital Experiences',
+  heroSubtitle: 'We build fast, secure, and beautiful web applications that drive results for your business.',
+  contactEmail: 'hello@corstack.com',
+  socialLinks: {
+    twitter: 'https://twitter.com/corstack',
+    linkedin: 'https://linkedin.com/company/corstack',
+    github: 'https://github.com/corstack'
+  }
 };
 
-const contactSettings = {
-  ngnPhone: '+234 800 000 0000',
-  ngnEmail: 'hello@corstack.dev',
-  usdPhone: '+1 (234) 567-890',
-  usdEmail: 'hello@corstack.dev'
+let contactSettings = {
+  address: '123 Tech Lane, Innovation District',
+  phone: '+1 (555) 123-4567',
+  supportEmail: 'support@corstack.com'
 };
 
-async function seed() {
+async function loadBackupIfExists() {
+  const backupPath = path.join(process.cwd(), 'scripts', 'db-backup.json');
+  if (fs.existsSync(backupPath)) {
+    console.log(`\n📦 Found db-backup.json! Loading seeded data from your backup...`);
+    try {
+      const backupData = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
+      if (backupData.pricing) pricingTiers = backupData.pricing;
+      if (backupData.portfolio) portfolioItems = backupData.portfolio;
+      if (backupData.services) servicesItems = backupData.services;
+      if (backupData.client_types) clientTypesItems = backupData.client_types;
+      if (backupData.process) processItems = backupData.process;
+      if (backupData.settings) {
+        if (backupData.settings.general) generalSettings = backupData.settings.general;
+        if (backupData.settings.contact) contactSettings = backupData.settings.contact;
+      }
+      console.log('✅ Backup data loaded successfully.');
+    } catch (e) {
+      console.error('❌ Failed to parse db-backup.json. Falling back to hardcoded defaults.', e);
+    }
+  } else {
+    console.log(`\nℹ️ No db-backup.json found. Seeding with hardcoded defaults.`);
+  }
+  console.log('');
+}
+
+async function run() {
+  await loadBackupIfExists();
+
   console.log('Clearing existing Pricing...');
   const pricingSnapshot = await db.collection('pricing').get();
   for (const doc of pricingSnapshot.docs) {
@@ -228,8 +249,8 @@ async function seed() {
   }
 
   console.log('Seeding Pricing...');
-  for (const item of pricingTiers) {
-    await db.collection('pricing').add(item);
+  for (const tier of pricingTiers) {
+    await db.collection('pricing').add(tier);
   }
 
   console.log('Clearing existing Portfolio...');
@@ -284,4 +305,4 @@ async function seed() {
   process.exit(0);
 }
 
-seed();
+run();
