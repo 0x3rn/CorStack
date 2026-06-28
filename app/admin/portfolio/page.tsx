@@ -7,15 +7,7 @@ import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 
-interface PortfolioItem {
-  id?: string;
-  title: string;
-  category: string;
-  description?: string;
-  imageUrl: string;
-  websiteUrl?: string;
-  order: number;
-}
+import { PortfolioItem } from "../../../lib/types";
 
 export default function AdminPortfolioPage() {
   const [user, loading] = useAuthState(auth);
@@ -155,7 +147,7 @@ export default function AdminPortfolioPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentItem) return;
+    if (!currentItem || !user) return;
 
     let finalItem = { ...currentItem };
     const currentUrls = finalItem.imageUrls || (finalItem.imageUrl ? [finalItem.imageUrl] : []);
