@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useCurrency } from '../hooks/useCurrency';
 import { Settings } from '../lib/types';
 import { Mail, Phone } from 'lucide-react';
@@ -11,6 +12,12 @@ interface FooterProps {
 
 export default function Footer({ settings }: FooterProps) {
   const { currency } = useCurrency();
+  const pathname = usePathname();
+
+  // Don't show the footer on admin routes
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className="footer bg-brand-dark text-white pt-16 pb-8 border-t border-white/10">

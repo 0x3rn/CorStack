@@ -33,7 +33,7 @@ export default async function HomePage() {
             },
             "sameAs": [
               "https://x.com/corstackdev",
-              "https://instagram.com/corstackdev"
+              "https://instagram.com/corstack.dev"
             ],
             "priceRange": "$$",
             "areaServed": "NG",

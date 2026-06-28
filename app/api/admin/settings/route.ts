@@ -14,6 +14,8 @@ async function verifyAdmin(request: Request) {
   return decodedToken;
 }
 
+import { revalidatePath } from 'next/cache';
+
 export async function PUT(request: Request) {
   try {
     await verifyAdmin(request);
@@ -23,6 +25,11 @@ export async function PUT(request: Request) {
     if (!docId) return NextResponse.json({ error: 'Missing document ID' }, { status: 400 });
 
     await db.collection('settings').doc(docId).set(updateData, { merge: true });
+    
+    // Invalidate the cache for public content and the homepage
+    revalidatePath('/api/content');
+    revalidatePath('/');
+
     return NextResponse.json({ success: true });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
