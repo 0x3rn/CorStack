@@ -18,6 +18,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     setIsMobileMenuOpen(false);
   }, [pathname]);
 
+  // Global failsafe: if a user is somehow logged in but isn't the admin,
+  // sign them out forcefully so they aren't permanently locked out of the login page.
+  useEffect(() => {
+    if (!loading && user && process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
+      signOut(auth).catch(console.error);
+    }
+  }, [user, loading]);
+
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/admin/login");
