@@ -33,10 +33,10 @@ export default function Footer({ settings }: FooterProps) {
         <div className="footer-links flex flex-col gap-5">
           <h3 className="font-bold text-[1.1rem]">Company</h3>
           <ul className="flex flex-col gap-3">
-            <li><Link href="#portfolio" className="text-gray-400 hover:text-white transition-colors">Portfolio</Link></li>
-            <li><Link href="#services" className="text-gray-400 hover:text-white transition-colors">Services</Link></li>
-            <li><Link href="#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
-            <li><Link href="#process" className="text-gray-400 hover:text-white transition-colors">Process</Link></li>
+            <li><Link href="/#portfolio" className="text-gray-400 hover:text-white transition-colors">Portfolio</Link></li>
+            <li><Link href="/#services" className="text-gray-400 hover:text-white transition-colors">Services</Link></li>
+            <li><Link href="/#pricing" className="text-gray-400 hover:text-white transition-colors">Pricing</Link></li>
+            <li><Link href="/#process" className="text-gray-400 hover:text-white transition-colors">Process</Link></li>
           </ul>
         </div>
 
