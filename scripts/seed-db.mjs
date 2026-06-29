@@ -101,21 +101,21 @@ let portfolioItems = [
     title: 'Vera',
     category: 'SaaS | Tech Consulting Firm',
     description: 'We built a high-performance, conversion-optimized landing page for Vera, showcasing their tech consulting services with sleek modern aesthetics and lightning-fast load times.',
-    imageUrls: ['/hirehook.png'],
+    desktopImageUrls: ['/hirehook.png'],
     order: 0
   },
   {
     title: 'Omnimart',
     category: 'E-Commerce Setup',
     description: 'A complete e-commerce storefront designed to maximize sales. Features include advanced product filtering, seamless checkout flows, and a mobile-first shopping experience.',
-    imageUrls: ['/omnimart.png'],
+    desktopImageUrls: ['/omnimart.png'],
     order: 1
   },
   {
     title: 'Omnimart v2',
     category: 'E-Commerce Setup',
     description: 'An iteration on the Omnimart design system, focusing on bold typography and immersive product showcases.',
-    imageUrls: ['/omnimart.png'],
+    desktopImageUrls: ['/omnimart.png'],
     order: 2
   }
 ];
@@ -221,9 +221,22 @@ async function loadBackupIfExists() {
     try {
       const backupData = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
       if (backupData.pricing) pricingTiers = backupData.pricing;
-      if (backupData.portfolio) portfolioItems = backupData.portfolio;
+      if (backupData.portfolio) {
+        portfolioItems = backupData.portfolio.map(item => {
+          let desktopImageUrls = item.desktopImageUrls || [];
+          if (!desktopImageUrls.length) {
+             desktopImageUrls = item.imageUrls && item.imageUrls.length > 0 
+                ? item.imageUrls 
+                : (item.imageUrl ? [item.imageUrl] : []);
+          }
+          const newItem = { ...item, desktopImageUrls };
+          delete newItem.imageUrls;
+          delete newItem.imageUrl;
+          return newItem;
+        });
+      }
       if (backupData.services) servicesItems = backupData.services;
-      if (backupData.client_types) clientTypesItems = backupData.client_types;
+      if (backupData.clientTypes) clientTypesItems = backupData.clientTypes;
       if (backupData.process) processItems = backupData.process;
       if (backupData.settings) {
         if (backupData.settings.general) generalSettings = backupData.settings.general;

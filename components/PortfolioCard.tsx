@@ -5,12 +5,12 @@ import { ExternalLink, ArrowDown } from 'lucide-react';
 import { PortfolioItem } from '../lib/types';
 
 function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: boolean }) {
-  const [hasHovered, setHasHovered] = useState(false);
   const [isScrollingUI, setIsScrollingUI] = useState(false);
-  const isScrollingRef = useRef(false);
+  const [canScroll, setCanScroll] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollDirectionRef = useRef<1 | -1>(1);
   const animationRef = useRef<number | null>(null);
+  const isScrollingRef = useRef(false);
 
   useEffect(() => {
     return () => {
@@ -99,70 +99,87 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
     animationRef.current = requestAnimationFrame(animate);
   };
 
-  const handleInteraction = () => {
-    if (isScrollingRef.current) {
-      stopAutoScroll();
-    } else {
-      startAutoScroll();
-    }
-  };
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
 
-  const handleMouseEnter = () => {
-    if (!hasHovered && isActive) {
-      setHasHovered(true);
-      startAutoScroll();
-    }
-  };
+    // Only enable hover auto-scroll on devices with a real mouse
+    const mql = window.matchMedia('(hover: hover) and (pointer: fine)');
 
-  // Determine if we should show the tap to scroll indicator at all
-  // It should only show if the image is tall enough to be scrolled
-  const [canScroll, setCanScroll] = useState(true);
+    const handleEnter = () => {
+      if (mql.matches) startAutoScroll();
+    };
+    const handleLeave = () => {
+      if (mql.matches) stopAutoScroll();
+    };
+
+    // On mobile: tap to toggle auto-scroll
+    const handleClick = (e: MouseEvent) => {
+      if (mql.matches) return; // Desktop uses hover, not click
+      e.stopPropagation();
+      if (isScrollingRef.current) {
+        stopAutoScroll();
+      } else {
+        startAutoScroll();
+      }
+    };
+
+    container.addEventListener('mouseenter', handleEnter);
+    container.addEventListener('mouseleave', handleLeave);
+    container.addEventListener('click', handleClick);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleEnter);
+      container.removeEventListener('mouseleave', handleLeave);
+      container.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  // Reset scroll position when the image changes (e.g. switching tabs)
   useEffect(() => {
     if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      setCanScroll(container.scrollHeight > container.clientHeight);
+      scrollContainerRef.current.scrollTop = 0;
     }
+    // Also stop any ongoing auto-scroll
+    stopAutoScroll();
   }, [imageUrl]);
 
   return (
-    <div 
-      className="relative min-w-full w-full flex-none h-full overflow-hidden bg-[#f8fafc] cursor-pointer snap-center"
-      onMouseEnter={handleMouseEnter}
-      onClick={handleInteraction}
-    >
+    <div className="w-full h-full flex-shrink-0 snap-center relative" style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'none' }}>
       <div 
         ref={scrollContainerRef}
-        className="w-full h-full overflow-y-auto overflow-x-hidden hide-scroll block"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-        onWheel={stopAutoScroll}
-        onTouchMove={stopAutoScroll}
+        className="w-full h-full overflow-y-auto hide-scroll relative z-20 cursor-ns-resize"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'none' }}
       >
-        <div className="min-h-full w-full flex flex-col justify-center">
+        <div className="min-h-full flex flex-col">
           <img 
             src={imageUrl} 
-            alt="Portfolio Screenshot" 
-            className="w-full h-auto block" 
-            draggable={false}
+            alt="Portfolio item"
+            className="w-full object-cover select-none pointer-events-none"
             onLoad={(e) => {
+              const img = e.target as HTMLImageElement;
               const container = scrollContainerRef.current;
-              if (container) setCanScroll(container.scrollHeight > container.clientHeight);
+              if (container && img.clientHeight > container.clientHeight) {
+                setCanScroll(true);
+              }
             }}
           />
         </div>
       </div>
       
-      {/* Tap to scroll indicator */}
+      {/* Tap to scroll indicator - only show on touch devices */}
       {canScroll && (
-        <button 
+        <div 
           className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-500 z-20 
-            flex items-center gap-1.5 px-4 py-2 bg-black/30 hover:bg-black/50 backdrop-blur-sm rounded-full 
+            flex items-center gap-1.5 px-4 py-2 bg-black/30 backdrop-blur-sm rounded-full 
             text-white/90 text-xs font-bold uppercase tracking-wider border border-white/10 pointer-events-none
+            md:hidden
             ${isScrollingUI ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'}
           `}
         >
           <span>Tap to scroll</span>
           <ArrowDown className="w-3.5 h-3.5" />
-        </button>
+        </div>
       )}
     </div>
   );
@@ -170,17 +187,28 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
 
 interface PortfolioCardProps {
   item: PortfolioItem;
+  globalActiveView?: 'desktop' | 'mobile';
 }
 
-export default function PortfolioCard({ item }: PortfolioCardProps) {
-  const images = item.imageUrls && item.imageUrls.length > 0 
-    ? item.imageUrls 
-    : (item.imageUrl ? [item.imageUrl] : []);
-    
+function CarouselWrapper({ images, viewName }: { images: string[], viewName: string }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Handle scroll snapping to determine active image
+  useEffect(() => {
+    setActiveIndex(0);
+    if (carouselRef.current) {
+      carouselRef.current.scrollLeft = 0;
+    }
+  }, [viewName, images]);
+
+  if (images.length === 0) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 font-bold uppercase tracking-wider text-sm">
+        {viewName} view coming soon
+      </div>
+    );
+  }
+
   const handleScroll = () => {
     if (!carouselRef.current) return;
     const scrollLeft = carouselRef.current.scrollLeft;
@@ -192,15 +220,87 @@ export default function PortfolioCard({ item }: PortfolioCardProps) {
   };
 
   return (
-    <article className="portfolio-card group">
-      {/* Fake Mac Browser Header */}
-      <div className="w-full bg-[#f8fafc] px-4 py-3 flex gap-2 border-b border-black/5 relative z-10">
+    <>
+      <div 
+        ref={carouselRef}
+        onScroll={handleScroll}
+        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll relative z-20"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none', touchAction: 'pan-x pan-y' }}
+      >
+        {images.map((url, idx) => (
+          <PortfolioSlide key={idx} imageUrl={url} isActive={idx === activeIndex} />
+        ))}
+      </div>
+
+      {images.length > 1 && (
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 pointer-events-none">
+          {images.map((_, idx) => (
+            <div 
+              key={idx} 
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-white w-3' : 'bg-white/40'}`}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+export default function PortfolioCard({ item, globalActiveView = 'desktop' }: PortfolioCardProps) {
+  // Desktop and Mobile image arrays
+  const desktopImages = item.desktopImageUrls || (item.imageUrl ? [item.imageUrl] : []);
+  const mobileImages = item.mobileImageUrls || [];
+
+  // Local state for mobile
+  const [localActiveView, setLocalActiveView] = useState<'desktop' | 'mobile'>(
+    mobileImages.length > 0 ? 'mobile' : 'desktop'
+  );
+
+  const hasBoth = desktopImages.length > 0 && mobileImages.length > 0;
+
+  return (
+    <article className="portfolio-card group flex flex-col">
+
+      {/* Browser Header — single bar for both mobile and desktop */}
+      <div className="w-full bg-[#f8fafc] px-4 py-3 flex gap-2 border-b border-black/5 relative z-10 rounded-t-xl">
         <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
         <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
         <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
       </div>
+
+      {/* Mobile-only tab switcher — sits between browser header and image, outside scroll container */}
+      {hasBoth && (
+        <div className="md:hidden flex justify-center py-3 bg-[#f8fafc] border-b border-black/5 relative z-40">
+          <div className="inline-flex bg-gray-100 border border-black/5 rounded-full p-1 shadow-inner" style={{ touchAction: 'manipulation' }}>
+            <button
+              type="button"
+              onPointerDown={(e) => { e.preventDefault(); setLocalActiveView('desktop'); }}
+              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
+                localActiveView === 'desktop'
+                  ? 'bg-accent-primary text-white shadow-md'
+                  : 'text-gray-500'
+              }`}
+              style={{ touchAction: 'manipulation' }}
+            >
+              Desktop View
+            </button>
+            <button
+              type="button"
+              onPointerDown={(e) => { e.preventDefault(); setLocalActiveView('mobile'); }}
+              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
+                localActiveView === 'mobile'
+                  ? 'bg-accent-primary text-white shadow-md'
+                  : 'text-gray-500'
+              }`}
+              style={{ touchAction: 'manipulation' }}
+            >
+              Mobile View
+            </button>
+          </div>
+        </div>
+      )}
       
-      <div className="relative w-full h-[320px] overflow-hidden">
+      <div className="relative w-full h-[320px] overflow-hidden bg-white">
         <style>{`
           .hide-scroll::-webkit-scrollbar {
             display: none !important;
@@ -208,33 +308,25 @@ export default function PortfolioCard({ item }: PortfolioCardProps) {
             height: 0 !important;
           }
         `}</style>
-        
-        {/* Horizontal Swiping Carousel */}
-        <div 
-          ref={carouselRef}
-          onScroll={handleScroll}
-          className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
-        >
-          {images.map((url, idx) => (
-            <PortfolioSlide key={idx} imageUrl={url} isActive={idx === activeIndex} />
-          ))}
+
+        {/* Desktop View container */}
+        <div className="hidden md:block w-full h-full">
+          <CarouselWrapper 
+            images={globalActiveView === 'desktop' ? desktopImages : mobileImages} 
+            viewName={globalActiveView === 'desktop' ? 'Desktop' : 'Mobile'}
+          />
         </div>
 
-        {/* Carousel Dot Indicators */}
-        {images.length > 1 && (
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 pointer-events-none">
-            {images.map((_, idx) => (
-              <div 
-                key={idx} 
-                className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-white w-3' : 'bg-white/40'}`}
-              />
-            ))}
-          </div>
-        )}
+        {/* Mobile View container */}
+        <div className="block md:hidden w-full h-full">
+          <CarouselWrapper 
+            images={localActiveView === 'desktop' ? desktopImages : mobileImages} 
+            viewName={localActiveView === 'desktop' ? 'Desktop' : 'Mobile'}
+          />
+        </div>
       </div>
       
-      <div className="portfolio-info flex flex-col gap-3">
+      <div className="portfolio-info flex flex-col gap-3 mt-4">
         <div>
           <h4 className="portfolio-title">{item.title}</h4>
           <p className="portfolio-category">{item.category}</p>

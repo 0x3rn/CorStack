@@ -238,9 +238,11 @@
     @apply p-10;
   }
 
-  .feature-card:hover,
-  .portfolio-card:hover {
-    @apply bg-white shadow-hover -translate-y-2;
+  @media (hover: hover) and (pointer: fine) {
+    .feature-card:hover,
+    .portfolio-card:hover {
+      @apply bg-white shadow-hover -translate-y-2;
+    }
   }
 
   .feature-card svg {
@@ -280,6 +282,34 @@
     @apply text-sm text-accent-primary;
   }
 
+  /* Kill ALL translate/transform effects on mobile for every card type */
+  @media (max-width: 767px) {
+    .portfolio-card,
+    .feature-card,
+    .pricing-card,
+    .popular-tier {
+      transform: none !important;
+      transition: background-color 0.3s, box-shadow 0.3s, border-color 0.3s !important;
+    }
+    .portfolio-card:hover,
+    .portfolio-card:active,
+    .portfolio-card:focus,
+    .feature-card:hover,
+    .feature-card:active,
+    .feature-card:focus,
+    .pricing-card:hover,
+    .pricing-card:active,
+    .pricing-card:focus,
+    .popular-tier:hover,
+    .popular-tier:active,
+    .popular-tier:focus {
+      transform: none !important;
+    }
+    .portfolio-card {
+      cursor: default;
+    }
+  }
+
   .portfolio-action {
     @apply text-center mt-16;
   }
@@ -297,8 +327,10 @@
     @apply bg-white border border-black/[0.08] rounded-lg py-12 px-10 flex-1 min-w-[300px] max-w-[400px] relative transition-all duration-500 ease-premium shadow-soft flex flex-col;
   }
 
-  .pricing-card:hover {
-    @apply -translate-y-2 shadow-hover;
+  @media (hover: hover) and (pointer: fine) {
+    .pricing-card:hover {
+      @apply -translate-y-2 shadow-hover;
+    }
   }
 
   .pricing-name {
@@ -334,8 +366,10 @@
     @apply bg-brand-dark text-white scale-105 border border-white/10 shadow-hover;
   }
 
-  .popular-tier:hover {
-    @apply scale-105 -translate-y-2;
+  @media (hover: hover) and (pointer: fine) {
+    .popular-tier:hover {
+      @apply scale-105 -translate-y-2;
+    }
   }
 
   .badge {

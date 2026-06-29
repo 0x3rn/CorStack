@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import ContactForm from '../components/ContactForm';
 import ClientPricing from '../components/ClientPricing';
-import PortfolioCard from '../components/PortfolioCard';
+import PortfolioSection from '../components/PortfolioSection';
 import { DynamicIcon } from '../components/DynamicIcon';
 import { getPublicContent } from '../lib/db/content';
 import { XCircle, PenTool, Smartphone, Zap, Rocket, LifeBuoy, CheckCircle, ExternalLink, ChevronDown } from 'lucide-react';
@@ -190,25 +190,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="portfolio" className="portfolio-section">
-        <div className="centered">
-          <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Portfolio</span>
-          <h2 className="section-title">Selected Work</h2>
-          <p className="section-subtitle">Explore some of our recent projects and see how thoughtful design and development can tranform an online presence.</p>
-        </div>
-        
-        <div className="portfolio-grid">
-          {portfolio && portfolio.length > 0 ? (
-            portfolio.map(item => (
-              <PortfolioCard key={item.id} item={item} />
-            ))
-          ) : (
-            <div className="col-span-full text-center text-gray-500 py-12">
-              Portfolio items will appear here once added in the admin dashboard.
-            </div>
-          )}
-        </div>
-      </section>
+      <PortfolioSection portfolio={portfolio} />
 
       <section id="process" className="process-section">
         <div className="centered">

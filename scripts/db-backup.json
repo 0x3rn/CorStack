@@ -213,10 +213,10 @@
       "heroSubtitle": "We engineer high-performance digital platforms. From custom personal portfolios to robust corporate websites, we deliver tailored web solutions that command attention and drive measurable results."
     },
     "contact": {
-      "ngnPhone": "+234 800 000 0000",
       "ngnEmail": "hello@corstack.dev",
-      "usdPhone": "+1 (234) 567-890",
-      "usdEmail": "hello@corstack.dev"
+      "usdEmail": "hello@corstack.dev",
+      "ngnPhone": "",
+      "usdPhone": ""
     }
   }
 }

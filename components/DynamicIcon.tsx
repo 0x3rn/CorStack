@@ -8,6 +8,7 @@ interface IconProps {
 }
 
 const toPascalCase = (str: string) => {
+  if (!str) return '';
   return str
     .match(/[a-z]+/gi)
     ?.map(word => word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())

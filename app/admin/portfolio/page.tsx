@@ -21,7 +21,9 @@ export default function AdminPortfolioPage() {
   
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [linkInput, setLinkInput] = useState("");
+  
+  const [desktopLinkInput, setDesktopLinkInput] = useState("");
+  const [mobileLinkInput, setMobileLinkInput] = useState("");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -58,19 +60,19 @@ export default function AdminPortfolioPage() {
       title: '',
       category: '',
       description: '',
-      imageUrl: '',
-      imageUrls: [],
+      desktopImageUrls: [],
+      mobileImageUrls: [],
       websiteUrl: '',
       order: items.length
     });
     setIsEditing(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
     const file = e.target.files?.[0];
     if (!file || !currentItem) return;
     
-    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
     if (currentUrls.length >= 5) {
       toast.error("Maximum 5 images allowed");
       return;
@@ -92,43 +94,57 @@ export default function AdminPortfolioPage() {
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
         const updatedUrls = [...currentUrls, downloadURL];
-        setCurrentItem({ ...currentItem, imageUrl: updatedUrls[0], imageUrls: updatedUrls });
+        
+        if (type === 'desktop') {
+          setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+        } else {
+          setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+        }
+        
         setIsUploading(false);
         setUploadProgress(0);
         toast.success("Image uploaded!");
         
-        // Reset file input
         if (e.target) e.target.value = '';
       }
     );
   };
 
-  const handleAddLink = () => {
+  const handleAddLink = (type: 'desktop' | 'mobile') => {
+    const linkInput = type === 'desktop' ? desktopLinkInput : mobileLinkInput;
     if (!linkInput.trim() || !currentItem) return;
-    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    
+    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
     if (currentUrls.length >= 5) {
       toast.error("Maximum 5 images allowed");
       return;
     }
+    
     const updatedUrls = [...currentUrls, linkInput.trim()];
-    setCurrentItem({ ...currentItem, imageUrl: updatedUrls[0], imageUrls: updatedUrls });
-    setLinkInput("");
+    if (type === 'desktop') {
+      setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+      setDesktopLinkInput("");
+    } else {
+      setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+      setMobileLinkInput("");
+    }
   };
 
-  const removeImage = (indexToRemove: number) => {
+  const removeImage = (indexToRemove: number, type: 'desktop' | 'mobile') => {
     if (!currentItem) return;
-    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
     const updatedUrls = currentUrls.filter((_, idx) => idx !== indexToRemove);
-    setCurrentItem({ 
-      ...currentItem, 
-      imageUrl: updatedUrls.length > 0 ? updatedUrls[0] : '', 
-      imageUrls: updatedUrls 
-    });
+    
+    if (type === 'desktop') {
+      setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+    } else {
+      setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+    }
   };
 
-  const moveImage = (index: number, direction: 'left' | 'right') => {
+  const moveImage = (index: number, direction: 'left' | 'right', type: 'desktop' | 'mobile') => {
     if (!currentItem) return;
-    const currentUrls = currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : []);
+    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
     const newIndex = direction === 'left' ? index - 1 : index + 1;
     
     if (newIndex < 0 || newIndex >= currentUrls.length) return;
@@ -138,11 +154,11 @@ export default function AdminPortfolioPage() {
     updatedUrls[index] = updatedUrls[newIndex];
     updatedUrls[newIndex] = temp;
     
-    setCurrentItem({ 
-      ...currentItem, 
-      imageUrl: updatedUrls[0], 
-      imageUrls: updatedUrls 
-    });
+    if (type === 'desktop') {
+      setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+    } else {
+      setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -150,22 +166,31 @@ export default function AdminPortfolioPage() {
     if (!currentItem || !user) return;
 
     let finalItem = { ...currentItem };
-    const currentUrls = finalItem.imageUrls || (finalItem.imageUrl ? [finalItem.imageUrl] : []);
     
-    // Auto-consume dangling input link if they forgot to click "Add"
-    if (linkInput.trim() && currentUrls.length < 5) {
-      const updatedUrls = [...currentUrls, linkInput.trim()];
-      finalItem = { ...finalItem, imageUrl: updatedUrls[0], imageUrls: updatedUrls };
-      setLinkInput("");
+    // Auto-consume dangling desktop link
+    const desktopUrls = finalItem.desktopImageUrls || [];
+    if (desktopLinkInput.trim() && desktopUrls.length < 5) {
+      finalItem.desktopImageUrls = [...desktopUrls, desktopLinkInput.trim()];
+      setDesktopLinkInput("");
+    }
+    
+    // Auto-consume dangling mobile link
+    const mobileUrls = finalItem.mobileImageUrls || [];
+    if (mobileLinkInput.trim() && mobileUrls.length < 5) {
+      finalItem.mobileImageUrls = [...mobileUrls, mobileLinkInput.trim()];
+      setMobileLinkInput("");
     }
 
-    const finalUrls = finalItem.imageUrls || (finalItem.imageUrl ? [finalItem.imageUrl] : []);
-    if (finalUrls.length === 0) return toast.error("Please provide at least one image");
+    const finalDesktopUrls = finalItem.desktopImageUrls || [];
+    const finalMobileUrls = finalItem.mobileImageUrls || [];
+    
+    if (finalDesktopUrls.length === 0 && finalMobileUrls.length === 0) {
+      return toast.error("Please provide at least one image (desktop or mobile)");
+    }
     
     setIsSaving(true);
     
     try {
-      // Auto-format websiteUrl
       if (finalItem.websiteUrl && !finalItem.websiteUrl.startsWith('http://') && !finalItem.websiteUrl.startsWith('https://')) {
         finalItem.websiteUrl = 'https://' + finalItem.websiteUrl;
       }
@@ -267,81 +292,123 @@ export default function AdminPortfolioPage() {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold mb-2">Portfolio Images (Max 5)</label>
-            <div className="flex flex-col gap-4">
-              {(currentItem.imageUrls?.length || 0) > 0 || currentItem.imageUrl ? (
-                <div className="grid grid-cols-5 gap-3">
-                  {(currentItem.imageUrls || (currentItem.imageUrl ? [currentItem.imageUrl] : [])).map((url, idx) => (
-                    <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 aspect-square">
-                      <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
-                      <button 
-                        type="button" 
-                        onClick={() => removeImage(idx)}
-                        className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        &times;
-                      </button>
-                      <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        {idx > 0 && (
-                          <button type="button" onClick={() => moveImage(idx, 'left')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">
-                            ←
-                          </button>
-                        )}
-                        {idx < ((currentItem.imageUrls?.length || (currentItem.imageUrl ? 1 : 0)) - 1) && (
-                          <button type="button" onClick={() => moveImage(idx, 'right')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">
-                            →
-                          </button>
-                        )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 border-t pt-6">
+            {/* Desktop Images */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Desktop Images (Max 5)</label>
+              <div className="flex flex-col gap-4">
+                {(currentItem.desktopImageUrls?.length || 0) > 0 ? (
+                  <div className="grid grid-cols-3 gap-3">
+                    {currentItem.desktopImageUrls?.map((url, idx) => (
+                      <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 aspect-video">
+                        <img src={url} alt={`Desktop ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button 
+                          type="button" 
+                          onClick={() => removeImage(idx, 'desktop')}
+                          className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          &times;
+                        </button>
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {idx > 0 && (
+                            <button type="button" onClick={() => moveImage(idx, 'left', 'desktop')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">←</button>
+                          )}
+                          {idx < ((currentItem.desktopImageUrls?.length || 0) - 1) && (
+                            <button type="button" onClick={() => moveImage(idx, 'right', 'desktop')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">→</button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
+
+                {((currentItem.desktopImageUrls?.length || 0) < 5) && (
+                  <div className="flex-1 flex flex-col gap-4 p-4 border border-dashed rounded-xl bg-gray-50">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Option 1: Paste Link</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="https://.../image.png" 
+                          className="flex-1 py-2 px-3 border rounded-lg text-sm bg-white" 
+                          value={desktopLinkInput}
+                          onChange={e => setDesktopLinkInput(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddLink('desktop'); } }}
+                        />
+                        <button type="button" onClick={() => handleAddLink('desktop')} className="px-3 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800">Add</button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : null}
-
-              {((currentItem.imageUrls?.length || 0) < 5) && (
-                <div className="flex-1 flex flex-col gap-4 p-4 border border-dashed rounded-xl bg-gray-50">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Option 1: Paste an Image Link</label>
-                    <div className="flex gap-2">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Option 2: Upload</label>
                       <input 
-                        type="text" 
-                        placeholder="https://example.com/image.png" 
-                        className="flex-1 py-2 px-3 border rounded-lg text-sm bg-white" 
-                        value={linkInput}
-                        onChange={e => setLinkInput(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleAddLink();
-                          }
-                        }}
+                        type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'desktop')} disabled={isUploading}
+                        className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black disabled:opacity-50"
                       />
-                      <button 
-                        type="button" 
-                        onClick={handleAddLink}
-                        className="px-4 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
-                      >
-                        Add
-                      </button>
                     </div>
                   </div>
-                  
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Option 2: Upload from Computer</label>
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={isUploading}
-                      className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black disabled:opacity-50"
-                    />
+                )}
+              </div>
+            </div>
+
+            {/* Mobile Images */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">Mobile Images (Max 5)</label>
+              <div className="flex flex-col gap-4">
+                {(currentItem.mobileImageUrls?.length || 0) > 0 ? (
+                  <div className="grid grid-cols-4 gap-3">
+                    {currentItem.mobileImageUrls?.map((url, idx) => (
+                      <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 aspect-[9/16]">
+                        <img src={url} alt={`Mobile ${idx + 1}`} className="w-full h-full object-cover" />
+                        <button 
+                          type="button" 
+                          onClick={() => removeImage(idx, 'mobile')}
+                          className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          &times;
+                        </button>
+                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {idx > 0 && (
+                            <button type="button" onClick={() => moveImage(idx, 'left', 'mobile')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">←</button>
+                          )}
+                          {idx < ((currentItem.mobileImageUrls?.length || 0) - 1) && (
+                            <button type="button" onClick={() => moveImage(idx, 'right', 'mobile')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">→</button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  {isUploading && <div className="text-xs text-accent-primary mt-1 font-semibold">Uploading: {Math.round(uploadProgress)}%</div>}
-                </div>
-              )}
+                ) : null}
+
+                {((currentItem.mobileImageUrls?.length || 0) < 5) && (
+                  <div className="flex-1 flex flex-col gap-4 p-4 border border-dashed rounded-xl bg-gray-50">
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Option 1: Paste Link</label>
+                      <div className="flex gap-2">
+                        <input 
+                          type="text" 
+                          placeholder="https://.../image.png" 
+                          className="flex-1 py-2 px-3 border rounded-lg text-sm bg-white" 
+                          value={mobileLinkInput}
+                          onChange={e => setMobileLinkInput(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddLink('mobile'); } }}
+                        />
+                        <button type="button" onClick={() => handleAddLink('mobile')} className="px-3 py-2 bg-black text-white rounded-lg text-sm font-semibold hover:bg-gray-800">Add</button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-gray-500 mb-1">Option 2: Upload</label>
+                      <input 
+                        type="file" accept="image/*" onChange={(e) => handleImageUpload(e, 'mobile')} disabled={isUploading}
+                        className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-black disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+          
+          {isUploading && <div className="text-xs text-accent-primary mt-1 font-semibold">Uploading: {Math.round(uploadProgress)}%</div>}
           
           <button type="submit" disabled={isSaving || isUploading} className="btn btn-primary mt-4">
             {isSaving ? 'Saving...' : 'Save Item'}
@@ -352,10 +419,13 @@ export default function AdminPortfolioPage() {
           {items.map(item => (
             <div key={item.id} className="bg-white rounded-xl shadow-soft p-6 border border-black/5 flex justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <img src={item.imageUrls?.[0] || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
+                <img src={item.desktopImageUrls?.[0] || item.mobileImageUrls?.[0] || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
                 <div>
                   <h3 className="font-bold text-lg">{item.title}</h3>
                   <p className="text-sm text-text-muted mt-1">{item.category}</p>
+                  <p className="text-xs text-text-muted mt-1">
+                    {item.desktopImageUrls?.length || 0} Desktop, {item.mobileImageUrls?.length || 0} Mobile
+                  </p>
                 </div>
               </div>
               <div className="flex gap-3">

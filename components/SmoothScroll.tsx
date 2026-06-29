@@ -14,11 +14,19 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (pathname?.startsWith("/admin")) return;
 
+    // Detect mobile viewport — skip portfolio-card animations on mobile
+    // to prevent conflicts with the CSS transform lock
+    const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
     const elementsToAnimate = document.querySelectorAll(
       ".feature-card, .pricing-card, .portfolio-card, .step-item, .section-title"
     );
 
     elementsToAnimate.forEach((el) => {
+      // Skip portfolio-card GSAP transforms on mobile
+      // (CSS locks transform to prevent hover shift, GSAP would fight it)
+      if (isMobile && el.classList.contains('portfolio-card')) return;
+
       // Only animate elements that are below the initial viewport to prevent hydration flashes
       const rect = el.getBoundingClientRect();
       const inViewport = rect.top < window.innerHeight && rect.bottom > 0;
@@ -35,7 +43,7 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
             scrollTrigger: {
               trigger: el,
               start: "top 85%",
-              toggleActions: "play none none none",
+              once: true,
             },
           }
         );
@@ -75,8 +83,11 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
     return <>{children}</>;
   }
 
+  // Disable smooth scrolling on touch devices to prevent flicker/repaint loops
+  const isTouchSSR = false; // SSR safe default
+  
   return (
-    <ReactLenis root ref={lenisRef} options={{ lerp: 0.08, smoothWheel: true }}>
+    <ReactLenis root ref={lenisRef} options={{ lerp: 0.08, smoothWheel: true, touchMultiplier: 0 }}>
       {children as any}
     </ReactLenis>
   );
