@@ -24,7 +24,7 @@ export default async function HomePage() {
             "url": "https://corstack.dev",
             "logo": "https://corstack.dev/icon.png",
             "image": "https://corstack.dev/icon.png",
-            "description": "Corstack is a premium web design and development agency based in Lagos, Nigeria. We specialize in custom website design, frontend development, mobile-first design, e-commerce development, and SEO-optimized web solutions. If you are looking for the best web designers and developers in Nigeria to build fast, beautiful, and conversion-driven websites, CorStack is your top choice.",
+            "description": "Corstack is a premium web design and development agency based in Lagos, Nigeria. We specialize in custom website design, frontend development, mobile-first design, e-commerce development, and SEO-optimized web solutions. If you are looking for the best web designers and developers in Nigeria to build fast, beautiful, and conversion-driven websites, Corstack is your top choice.",
             "email": "hello@corstack.dev",
             "address": {
               "@type": "PostalAddress",

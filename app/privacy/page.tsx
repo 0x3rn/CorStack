@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | CorStack',
-  description: 'Learn how CorStack collects, uses, and protects your information.',
+  title: 'Privacy Policy | Corstack',
+  description: 'Learn how Corstack collects, uses, and protects your information.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -12,7 +12,7 @@ export default function PrivacyPolicyPage() {
       <p className="last-updated">Last Updated: May 23, 2026</p>
 
       <p>
-        At CorStack, your privacy is a top priority. This Privacy Policy outlines how we collect, use, and protect your information when you visit our website or use our web design and development services.
+        At Corstack, your privacy is a top priority. This Privacy Policy outlines how we collect, use, and protect your information when you visit our website or use our web design and development services.
       </p>
 
       <h2>1. Information We Collect</h2>

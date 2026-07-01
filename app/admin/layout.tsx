@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               <path d="M3 12h18M3 6h18M3 18h18" />
             </svg>
           </button>
-          <span className="font-bold text-lg text-brand-dark">CorStack Admin</span>
+          <span className="font-bold text-lg text-brand-dark">Corstack Admin</span>
         </div>
       )}
       

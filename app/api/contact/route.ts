@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     const formattedMessage = message.replace(/\n/g, '<br>');
 
-    // 1. Notification Email HTML (To CorStack)
+    // 1. Notification Email HTML (To Corstack)
     const notificationHtml = `
       <!DOCTYPE html>
       <html>
@@ -40,7 +40,8 @@ export async function POST(req: Request) {
       </head>
       <body>
         <div class="container">
-          <div class="header">
+          <div class="header" style="display: flex; align-items: center; justify-content: center; gap: 12px; background-color: #0a0a0f; padding: 30px 40px; text-align: center;">
+            <img src="https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/logo.png?alt=media&token=22e02e00-1a2d-4c44-ab03-bf35af099509" alt="Corstack Logo" style="height: 32px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 4px;" />
             <h1>Corstack Agency</h1>
           </div>
           <div class="content">
@@ -91,7 +92,8 @@ export async function POST(req: Request) {
       </head>
       <body>
         <div class="container">
-          <div class="header">
+          <div class="header" style="display: flex; align-items: center; justify-content: center; gap: 12px; background-color: #0a0a0f; padding: 30px 40px; text-align: center;">
+            <img src="https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/logo.png?alt=media&token=22e02e00-1a2d-4c44-ab03-bf35af099509" alt="Corstack Logo" style="height: 32px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 4px;" />
             <h1>Corstack</h1>
           </div>
           <div class="content">

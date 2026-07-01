@@ -16,7 +16,7 @@ export default function Header() {
       <nav className="navbar">
         <div className="brand-logo">
           <Link href="/">
-            <img src="/logo.png" alt="CorStack Logo" className="nav-logo-img" />
+            <img src="/logo.png" alt="Corstack Logo" className="nav-logo-img" />
             <strong>corstack.</strong>
           </Link>
         </div>

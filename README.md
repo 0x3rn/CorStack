@@ -1,8 +1,8 @@
-# CorStack | Premium Web Agency Platform
+# Corstack | Premium Web Agency Platform
 
 > A high-performance, full-stack agency platform engineered for premium design, conversion optimization, and lightning-fast SEO performance.
 
-CorStack is a bespoke digital agency website built to capture leads and process global client payments. It features an elegant UI with glassmorphic accents, cinematic scroll animations, dynamic geolocation logic for localized pricing, and a serverless backend architecture.
+Corstack is a bespoke digital agency website built to capture leads and process global client payments. It features an elegant UI with glassmorphic accents, cinematic scroll animations, dynamic geolocation logic for localized pricing, and a serverless backend architecture.
 
 ## 🛠️ Tech Stack
 

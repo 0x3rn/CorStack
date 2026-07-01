@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Our Services | CorStack',
+  title: 'Our Services | Corstack',
   description: 'Comprehensive web solutions for modern brands, including Custom Web Design, E-Commerce, UI/UX Strategy, and Maintenance.',
 };
 
