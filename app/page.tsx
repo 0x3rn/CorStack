@@ -12,6 +12,9 @@ export default async function HomePage() {
   const content = await getPublicContent();
   const { pricing, portfolio, services, clientTypes, process, settings } = content;
 
+  // Filter portfolio to only show items marked for the homepage snippet
+  const homePortfolio = portfolio.filter(item => item.showOnHome !== false);
+
   return (
     <div className="w-full">
       <script
@@ -190,7 +193,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <PortfolioSection portfolio={portfolio} />
+      <PortfolioSection portfolio={homePortfolio} isHome={true} />
 
       <section id="process" className="process-section">
         <div className="centered">

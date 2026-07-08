@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 
-import { PortfolioItem } from "../../../lib/types";
+import { PortfolioItem, PortfolioImage } from "../../../lib/types";
 
 export default function AdminPortfolioPage() {
   const [user, loading] = useAuthState(auth);
@@ -42,7 +42,13 @@ export default function AdminPortfolioPage() {
     try {
       const res = await fetch('/api/content');
       const data = await res.json();
-      setItems(data.portfolio || []);
+      
+      const mappedPortfolio = (data.portfolio || []).map((item: any) => ({
+        ...item,
+        desktopImages: item.desktopImages || (item.desktopImageUrls || []).map((url: string) => ({ url, description: "" })),
+        mobileImages: item.mobileImages || (item.mobileImageUrls || []).map((url: string) => ({ url, description: "" }))
+      }));
+      setItems(mappedPortfolio);
     } catch (e) {
       toast.error('Failed to fetch portfolio');
     } finally {
@@ -51,7 +57,11 @@ export default function AdminPortfolioPage() {
   };
 
   const handleEdit = (item: PortfolioItem) => {
-    setCurrentItem({ ...item });
+    setCurrentItem({
+      ...item,
+      desktopImages: item.desktopImages || (item.desktopImageUrls || []).map((url: string) => ({ url, description: "" })),
+      mobileImages: item.mobileImages || (item.mobileImageUrls || []).map((url: string) => ({ url, description: "" }))
+    });
     setIsEditing(true);
   };
 
@@ -60,9 +70,10 @@ export default function AdminPortfolioPage() {
       title: '',
       category: '',
       description: '',
-      desktopImageUrls: [],
-      mobileImageUrls: [],
+      desktopImages: [],
+      mobileImages: [],
       websiteUrl: '',
+      showOnHome: true,
       order: items.length
     });
     setIsEditing(true);
@@ -72,8 +83,8 @@ export default function AdminPortfolioPage() {
     const file = e.target.files?.[0];
     if (!file || !currentItem) return;
     
-    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
-    if (currentUrls.length >= 5) {
+    const currentImages = type === 'desktop' ? (currentItem.desktopImages || []) : (currentItem.mobileImages || []);
+    if (currentImages.length >= 5) {
       toast.error("Maximum 5 images allowed");
       return;
     }
@@ -93,12 +104,13 @@ export default function AdminPortfolioPage() {
       }, 
       async () => {
         const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        const updatedUrls = [...currentUrls, downloadURL];
+        const newImage: PortfolioImage = { url: downloadURL, description: "" };
+        const updatedImages = [...currentImages, newImage];
         
         if (type === 'desktop') {
-          setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+          setCurrentItem({ ...currentItem, desktopImages: updatedImages });
         } else {
-          setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+          setCurrentItem({ ...currentItem, mobileImages: updatedImages });
         }
         
         setIsUploading(false);
@@ -114,50 +126,65 @@ export default function AdminPortfolioPage() {
     const linkInput = type === 'desktop' ? desktopLinkInput : mobileLinkInput;
     if (!linkInput.trim() || !currentItem) return;
     
-    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
-    if (currentUrls.length >= 5) {
+    const currentImages = type === 'desktop' ? (currentItem.desktopImages || []) : (currentItem.mobileImages || []);
+    if (currentImages.length >= 5) {
       toast.error("Maximum 5 images allowed");
       return;
     }
     
-    const updatedUrls = [...currentUrls, linkInput.trim()];
+    const newImage: PortfolioImage = { url: linkInput.trim(), description: "" };
+    const updatedImages = [...currentImages, newImage];
+    
     if (type === 'desktop') {
-      setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+      setCurrentItem({ ...currentItem, desktopImages: updatedImages });
       setDesktopLinkInput("");
     } else {
-      setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+      setCurrentItem({ ...currentItem, mobileImages: updatedImages });
       setMobileLinkInput("");
+    }
+  };
+
+  const updateImageDescription = (index: number, type: 'desktop' | 'mobile', description: string) => {
+    if (!currentItem) return;
+    const currentImages = type === 'desktop' ? [...(currentItem.desktopImages || [])] : [...(currentItem.mobileImages || [])];
+    if (currentImages[index]) {
+      currentImages[index].description = description;
+      if (type === 'desktop') {
+        setCurrentItem({ ...currentItem, desktopImages: currentImages });
+      } else {
+        setCurrentItem({ ...currentItem, mobileImages: currentImages });
+      }
     }
   };
 
   const removeImage = (indexToRemove: number, type: 'desktop' | 'mobile') => {
     if (!currentItem) return;
-    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
-    const updatedUrls = currentUrls.filter((_, idx) => idx !== indexToRemove);
+    const currentImages = type === 'desktop' ? (currentItem.desktopImages || []) : (currentItem.mobileImages || []);
+    const updatedImages = currentImages.filter((_, idx) => idx !== indexToRemove);
     
     if (type === 'desktop') {
-      setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+      setCurrentItem({ ...currentItem, desktopImages: updatedImages });
     } else {
-      setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+      setCurrentItem({ ...currentItem, mobileImages: updatedImages });
     }
   };
 
   const moveImage = (index: number, direction: 'left' | 'right', type: 'desktop' | 'mobile') => {
     if (!currentItem) return;
-    const currentUrls = type === 'desktop' ? (currentItem.desktopImageUrls || []) : (currentItem.mobileImageUrls || []);
+    const currentImages = type === 'desktop' ? (currentItem.desktopImages || []) : (currentItem.mobileImages || []);
     const newIndex = direction === 'left' ? index - 1 : index + 1;
     
-    if (newIndex < 0 || newIndex >= currentUrls.length) return;
+    if (newIndex < 0 || newIndex >= currentImages.length) return;
     
-    const updatedUrls = [...currentUrls];
-    const temp = updatedUrls[index];
-    updatedUrls[index] = updatedUrls[newIndex];
-    updatedUrls[newIndex] = temp;
+    const updatedImages = [...currentImages];
+    const temp = updatedImages[index];
+    updatedImages[index] = updatedImages[newIndex];
+    updatedImages[newIndex] = temp;
     
     if (type === 'desktop') {
-      setCurrentItem({ ...currentItem, desktopImageUrls: updatedUrls });
+      setCurrentItem({ ...currentItem, desktopImages: updatedImages });
     } else {
-      setCurrentItem({ ...currentItem, mobileImageUrls: updatedUrls });
+      setCurrentItem({ ...currentItem, mobileImages: updatedImages });
     }
   };
 
@@ -168,25 +195,29 @@ export default function AdminPortfolioPage() {
     let finalItem = { ...currentItem };
     
     // Auto-consume dangling desktop link
-    const desktopUrls = finalItem.desktopImageUrls || [];
-    if (desktopLinkInput.trim() && desktopUrls.length < 5) {
-      finalItem.desktopImageUrls = [...desktopUrls, desktopLinkInput.trim()];
+    const desktopImages = finalItem.desktopImages || [];
+    if (desktopLinkInput.trim() && desktopImages.length < 5) {
+      finalItem.desktopImages = [...desktopImages, { url: desktopLinkInput.trim(), description: "" }];
       setDesktopLinkInput("");
     }
     
     // Auto-consume dangling mobile link
-    const mobileUrls = finalItem.mobileImageUrls || [];
-    if (mobileLinkInput.trim() && mobileUrls.length < 5) {
-      finalItem.mobileImageUrls = [...mobileUrls, mobileLinkInput.trim()];
+    const mobileImages = finalItem.mobileImages || [];
+    if (mobileLinkInput.trim() && mobileImages.length < 5) {
+      finalItem.mobileImages = [...mobileImages, { url: mobileLinkInput.trim(), description: "" }];
       setMobileLinkInput("");
     }
 
-    const finalDesktopUrls = finalItem.desktopImageUrls || [];
-    const finalMobileUrls = finalItem.mobileImageUrls || [];
+    const finalDesktopImages = finalItem.desktopImages || [];
+    const finalMobileImages = finalItem.mobileImages || [];
     
-    if (finalDesktopUrls.length === 0 && finalMobileUrls.length === 0) {
+    if (finalDesktopImages.length === 0 && finalMobileImages.length === 0) {
       return toast.error("Please provide at least one image (desktop or mobile)");
     }
+    
+    // Clean up empty legacy arrays to save space
+    delete finalItem.desktopImageUrls;
+    delete finalItem.mobileImageUrls;
     
     setIsSaving(true);
     
@@ -292,37 +323,57 @@ export default function AdminPortfolioPage() {
             </div>
           </div>
 
+          <div className="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              id="showOnHome" 
+              checked={currentItem.showOnHome !== false} 
+              onChange={e => setCurrentItem({...currentItem, showOnHome: e.target.checked})} 
+              className="w-4 h-4 accent-black cursor-pointer" 
+            />
+            <label htmlFor="showOnHome" className="text-sm font-semibold cursor-pointer select-none">Show this item on the homepage snippet</label>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 border-t pt-6">
             {/* Desktop Images */}
             <div>
               <label className="block text-sm font-semibold mb-2">Desktop Images (Max 5)</label>
               <div className="flex flex-col gap-4">
-                {(currentItem.desktopImageUrls?.length || 0) > 0 ? (
-                  <div className="grid grid-cols-3 gap-3">
-                    {currentItem.desktopImageUrls?.map((url, idx) => (
-                      <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 aspect-video">
-                        <img src={url} alt={`Desktop ${idx + 1}`} className="w-full h-full object-cover" />
-                        <button 
-                          type="button" 
-                          onClick={() => removeImage(idx, 'desktop')}
-                          className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          &times;
-                        </button>
-                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {idx > 0 && (
-                            <button type="button" onClick={() => moveImage(idx, 'left', 'desktop')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">←</button>
-                          )}
-                          {idx < ((currentItem.desktopImageUrls?.length || 0) - 1) && (
-                            <button type="button" onClick={() => moveImage(idx, 'right', 'desktop')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">→</button>
-                          )}
+                {(currentItem.desktopImages?.length || 0) > 0 ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    {currentItem.desktopImages?.map((img, idx) => (
+                      <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 flex flex-col bg-gray-50">
+                        <div className="relative aspect-video">
+                          <img src={img.url} alt={`Desktop ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button 
+                            type="button" 
+                            onClick={() => removeImage(idx, 'desktop')}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            &times;
+                          </button>
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {idx > 0 && (
+                              <button type="button" onClick={() => moveImage(idx, 'left', 'desktop')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">←</button>
+                            )}
+                            {idx < ((currentItem.desktopImages?.length || 0) - 1) && (
+                              <button type="button" onClick={() => moveImage(idx, 'right', 'desktop')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">→</button>
+                            )}
+                          </div>
                         </div>
+                        <textarea 
+                          className="w-full p-2 text-sm border-t border-black/10 resize-none outline-none focus:bg-white transition-colors" 
+                          placeholder="Image description (optional)"
+                          rows={2}
+                          value={img.description || ''}
+                          onChange={(e) => updateImageDescription(idx, 'desktop', e.target.value)}
+                        />
                       </div>
                     ))}
                   </div>
                 ) : null}
 
-                {((currentItem.desktopImageUrls?.length || 0) < 5) && (
+                {((currentItem.desktopImages?.length || 0) < 5) && (
                   <div className="flex-1 flex flex-col gap-4 p-4 border border-dashed rounded-xl bg-gray-50">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Option 1: Paste Link</label>
@@ -354,32 +405,41 @@ export default function AdminPortfolioPage() {
             <div>
               <label className="block text-sm font-semibold mb-2">Mobile Images (Max 5)</label>
               <div className="flex flex-col gap-4">
-                {(currentItem.mobileImageUrls?.length || 0) > 0 ? (
-                  <div className="grid grid-cols-4 gap-3">
-                    {currentItem.mobileImageUrls?.map((url, idx) => (
-                      <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 aspect-[9/16]">
-                        <img src={url} alt={`Mobile ${idx + 1}`} className="w-full h-full object-cover" />
-                        <button 
-                          type="button" 
-                          onClick={() => removeImage(idx, 'mobile')}
-                          className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          &times;
-                        </button>
-                        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {idx > 0 && (
-                            <button type="button" onClick={() => moveImage(idx, 'left', 'mobile')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">←</button>
-                          )}
-                          {idx < ((currentItem.mobileImageUrls?.length || 0) - 1) && (
-                            <button type="button" onClick={() => moveImage(idx, 'right', 'mobile')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">→</button>
-                          )}
+                {(currentItem.mobileImages?.length || 0) > 0 ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    {currentItem.mobileImages?.map((img, idx) => (
+                      <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 flex flex-col bg-gray-50">
+                        <div className="relative aspect-[9/16]">
+                          <img src={img.url} alt={`Mobile ${idx + 1}`} className="w-full h-full object-cover" />
+                          <button 
+                            type="button" 
+                            onClick={() => removeImage(idx, 'mobile')}
+                            className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            &times;
+                          </button>
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {idx > 0 && (
+                              <button type="button" onClick={() => moveImage(idx, 'left', 'mobile')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">←</button>
+                            )}
+                            {idx < ((currentItem.mobileImages?.length || 0) - 1) && (
+                              <button type="button" onClick={() => moveImage(idx, 'right', 'mobile')} className="bg-black/70 text-white w-6 h-6 rounded flex items-center justify-center text-xs">→</button>
+                            )}
+                          </div>
                         </div>
+                        <textarea 
+                          className="w-full p-2 text-sm border-t border-black/10 resize-none outline-none focus:bg-white transition-colors" 
+                          placeholder="Image description (optional)"
+                          rows={3}
+                          value={img.description || ''}
+                          onChange={(e) => updateImageDescription(idx, 'mobile', e.target.value)}
+                        />
                       </div>
                     ))}
                   </div>
                 ) : null}
 
-                {((currentItem.mobileImageUrls?.length || 0) < 5) && (
+                {((currentItem.mobileImages?.length || 0) < 5) && (
                   <div className="flex-1 flex flex-col gap-4 p-4 border border-dashed rounded-xl bg-gray-50">
                     <div>
                       <label className="block text-xs text-gray-500 mb-1">Option 1: Paste Link</label>
@@ -419,12 +479,15 @@ export default function AdminPortfolioPage() {
           {items.map(item => (
             <div key={item.id} className="bg-white rounded-xl shadow-soft p-6 border border-black/5 flex justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <img src={item.desktopImageUrls?.[0] || item.mobileImageUrls?.[0] || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
+                <img src={item.desktopImages?.[0]?.url || item.mobileImages?.[0]?.url || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
                 <div>
                   <h3 className="font-bold text-lg">{item.title}</h3>
-                  <p className="text-sm text-text-muted mt-1">{item.category}</p>
+                  <p className="text-sm text-text-muted mt-1">
+                    {item.category} 
+                    {item.showOnHome !== false && <span className="ml-2 inline-block px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">Homepage</span>}
+                  </p>
                   <p className="text-xs text-text-muted mt-1">
-                    {item.desktopImageUrls?.length || 0} Desktop, {item.mobileImageUrls?.length || 0} Mobile
+                    {item.desktopImages?.length || 0} Desktop, {item.mobileImages?.length || 0} Mobile
                   </p>
                 </div>
               </div>

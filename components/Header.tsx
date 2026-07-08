@@ -23,7 +23,7 @@ export default function Header() {
         <ul className="nav-links">
           <li><Link href="/#services">Services</Link></li>
           <li><Link href="/#process">Process</Link></li>
-          <li><Link href="/#portfolio">Work</Link></li>
+          <li><Link href="/portfolio">Portfolio</Link></li>
           <li><Link href="/#pricing">Pricing</Link></li>
           <li><Link href="/#contact" className="btn btn-primary">Let&apos;s Talk</Link></li>
         </ul>

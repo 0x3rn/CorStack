@@ -9,15 +9,23 @@ export interface PricingTier {
   order: number;
 }
 
+export interface PortfolioImage {
+  url: string;
+  description?: string;
+}
+
 export interface PortfolioItem {
   id?: string;
   title: string;
   category: string;
   description?: string;
   imageUrl?: string; // Legacy fallback
-  desktopImageUrls?: string[];
-  mobileImageUrls?: string[];
+  desktopImages?: PortfolioImage[];
+  mobileImages?: PortfolioImage[];
+  desktopImageUrls?: string[]; // Legacy fallback
+  mobileImageUrls?: string[]; // Legacy fallback
   websiteUrl?: string;
+  showOnHome?: boolean;
   order: number;
 }
 export interface ServiceItem {

@@ -2,9 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ExternalLink, ArrowDown } from 'lucide-react';
-import { PortfolioItem } from '../lib/types';
+import { PortfolioItem, PortfolioImage } from '../lib/types';
 
-function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: boolean }) {
+function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, isActive: boolean, isHome?: boolean }) {
   const [isScrollingUI, setIsScrollingUI] = useState(false);
   const [canScroll, setCanScroll] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -35,12 +35,13 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
   };
 
   const startAutoScroll = () => {
+    if (isHome) return;
     if (!scrollContainerRef.current || isScrollingRef.current) return;
     
     const container = scrollContainerRef.current;
     const maxScroll = container.scrollHeight - container.clientHeight;
     
-    if (maxScroll <= 0) return; // Image fits perfectly, no need to scroll
+    if (maxScroll <= 0) return; 
     
     isScrollingRef.current = true;
     setIsScrollingUI(true);
@@ -100,10 +101,10 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
   };
 
   useEffect(() => {
+    if (isHome) return;
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    // Only enable hover auto-scroll on devices with a real mouse
     const mql = window.matchMedia('(hover: hover) and (pointer: fine)');
 
     const handleEnter = () => {
@@ -113,9 +114,8 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
       if (mql.matches) stopAutoScroll();
     };
 
-    // On mobile: tap to toggle auto-scroll
     const handleClick = (e: MouseEvent) => {
-      if (mql.matches) return; // Desktop uses hover, not click
+      if (mql.matches) return; 
       e.stopPropagation();
       if (isScrollingRef.current) {
         stopAutoScroll();
@@ -133,27 +133,25 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
       container.removeEventListener('mouseleave', handleLeave);
       container.removeEventListener('click', handleClick);
     };
-  }, []);
+  }, [isHome]);
 
-  // Reset scroll position when the image changes (e.g. switching tabs)
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = 0;
     }
-    // Also stop any ongoing auto-scroll
     stopAutoScroll();
-  }, [imageUrl]);
+  }, [image.url]);
 
   return (
     <div className="w-full h-full flex-shrink-0 snap-center relative" style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'none' }}>
       <div 
         ref={scrollContainerRef}
-        className="w-full h-full overflow-y-auto hide-scroll relative z-20 cursor-ns-resize"
+        className={`w-full h-full relative z-20 ${isHome ? 'overflow-hidden pointer-events-none' : 'overflow-y-auto cursor-ns-resize'} hide-scroll`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'none' }}
       >
         <div className="min-h-full flex flex-col">
           <img 
-            src={imageUrl} 
+            src={image.url} 
             alt="Portfolio item"
             className="w-full object-cover select-none pointer-events-none"
             onLoad={(e) => {
@@ -167,8 +165,7 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
         </div>
       </div>
       
-      {/* Tap to scroll indicator - only show on touch devices */}
-      {canScroll && (
+      {canScroll && !isHome && (
         <div 
           className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-500 z-20 
             flex items-center gap-1.5 px-4 py-2 bg-black/30 backdrop-blur-sm rounded-full 
@@ -185,12 +182,7 @@ function PortfolioSlide({ imageUrl, isActive }: { imageUrl: string, isActive: bo
   );
 }
 
-interface PortfolioCardProps {
-  item: PortfolioItem;
-  globalActiveView?: 'desktop' | 'mobile';
-}
-
-function CarouselWrapper({ images, viewName }: { images: string[], viewName: string }) {
+function CarouselWrapper({ images, isHome, isMobileMockup }: { images: PortfolioImage[], isHome?: boolean, isMobileMockup?: boolean }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -199,14 +191,10 @@ function CarouselWrapper({ images, viewName }: { images: string[], viewName: str
     if (carouselRef.current) {
       carouselRef.current.scrollLeft = 0;
     }
-  }, [viewName, images]);
+  }, [images]);
 
   if (images.length === 0) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 font-bold uppercase tracking-wider text-sm">
-        {viewName} view coming soon
-      </div>
-    );
+    return null;
   }
 
   const handleScroll = () => {
@@ -220,125 +208,136 @@ function CarouselWrapper({ images, viewName }: { images: string[], viewName: str
   };
 
   return (
-    <>
-      <div 
-        ref={carouselRef}
-        onScroll={handleScroll}
-        className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll relative z-20"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none', touchAction: 'pan-x pan-y' }}
-      >
-        {images.map((url, idx) => (
-          <PortfolioSlide key={idx} imageUrl={url} isActive={idx === activeIndex} />
-        ))}
+    <div className="flex flex-col h-full">
+      {/* Header Mockup */}
+      <div className={`w-full bg-[#f8fafc] px-4 py-3 flex gap-2 border border-black/5 relative z-10 ${isMobileMockup ? 'rounded-t-[2rem] justify-center items-center h-10' : 'rounded-t-xl'}`}>
+        {isMobileMockup ? (
+          <div className="w-12 h-1.5 rounded-full bg-black/10"></div>
+        ) : (
+          <>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+          </>
+        )}
       </div>
 
-      {images.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-30 pointer-events-none">
+      {/* Image Container */}
+      <div className={`relative w-full ${isHome ? 'h-[320px]' : (isMobileMockup ? 'h-[480px]' : 'h-[320px] sm:h-[480px]')} overflow-hidden bg-white border-x border-b border-black/5 ${isMobileMockup ? 'rounded-b-[2rem]' : 'rounded-b-xl'}`}>
+        <div 
+          ref={carouselRef}
+          onScroll={handleScroll}
+          className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll relative z-20"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none', touchAction: 'pan-x pan-y' }}
+        >
+          {images.map((img, idx) => (
+            <PortfolioSlide key={idx} image={img} isActive={idx === activeIndex} isHome={isHome} />
+          ))}
+        </div>
+      </div>
+
+      {/* Image Description */}
+      {!isHome && images[activeIndex]?.description && (
+        <p className="mt-3 text-[0.9rem] text-text-muted px-2 italic border-l-2 border-accent-primary/30">
+          {images[activeIndex].description}
+        </p>
+      )}
+
+      {/* Dots Indicator */}
+      {!isHome && images.length > 1 && (
+        <div className="flex justify-center items-center gap-1.5 mt-3">
           {images.map((_, idx) => (
             <div 
               key={idx} 
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-white w-3' : 'bg-white/40'}`}
+              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? 'bg-accent-primary w-3' : 'bg-gray-300'}`}
             />
           ))}
         </div>
       )}
-    </>
+    </div>
   );
 }
 
-export default function PortfolioCard({ item, globalActiveView = 'desktop' }: PortfolioCardProps) {
-  // Desktop and Mobile image arrays
-  const desktopImages = item.desktopImageUrls || (item.imageUrl ? [item.imageUrl] : []);
-  const mobileImages = item.mobileImageUrls || [];
+interface PortfolioCardProps {
+  item: PortfolioItem;
+  globalActiveView?: 'desktop' | 'mobile'; // Kept for interface compatibility but unused in side-by-side
+  isHome?: boolean;
+}
 
-  // Local state for mobile
-  const [localActiveView, setLocalActiveView] = useState<'desktop' | 'mobile'>(
-    mobileImages.length > 0 ? 'mobile' : 'desktop'
-  );
+export default function PortfolioCard({ item, isHome = false }: PortfolioCardProps) {
+  // Extract images, falling back to legacy fields if needed
+  const desktopImages: PortfolioImage[] = item.desktopImages 
+    || (item.desktopImageUrls?.map(url => ({ url })) || (item.imageUrl ? [{ url: item.imageUrl }] : []));
+  const mobileImages: PortfolioImage[] = item.mobileImages 
+    || (item.mobileImageUrls?.map(url => ({ url })) || []);
 
-  const hasBoth = desktopImages.length > 0 && mobileImages.length > 0;
+  const hasDesktop = desktopImages.length > 0;
+  const hasMobile = mobileImages.length > 0;
 
-  return (
-    <article className="portfolio-card group flex flex-col">
-
-      {/* Browser Header — single bar for both mobile and desktop */}
-      <div className="w-full bg-[#f8fafc] px-4 py-3 flex gap-2 border-b border-black/5 relative z-10 rounded-t-xl">
-        <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
-        <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
-        <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
-      </div>
-
-      {/* Mobile-only tab switcher — sits between browser header and image, outside scroll container */}
-      {hasBoth && (
-        <div className="md:hidden flex justify-center py-3 bg-[#f8fafc] border-b border-black/5 relative z-40">
-          <div className="inline-flex bg-gray-100 border border-black/5 rounded-full p-1 shadow-inner" style={{ touchAction: 'manipulation' }}>
-            <button
-              type="button"
-              onPointerDown={(e) => { e.preventDefault(); setLocalActiveView('desktop'); }}
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
-                localActiveView === 'desktop'
-                  ? 'bg-accent-primary text-white shadow-md'
-                  : 'text-gray-500'
-              }`}
-              style={{ touchAction: 'manipulation' }}
-            >
-              Desktop View
-            </button>
-            <button
-              type="button"
-              onPointerDown={(e) => { e.preventDefault(); setLocalActiveView('mobile'); }}
-              className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer select-none ${
-                localActiveView === 'mobile'
-                  ? 'bg-accent-primary text-white shadow-md'
-                  : 'text-gray-500'
-              }`}
-              style={{ touchAction: 'manipulation' }}
-            >
-              Mobile View
-            </button>
+  // On homepage, we only show desktop images, and we show them full width (simple)
+  if (isHome) {
+    return (
+      <article className="portfolio-card group flex flex-col">
+        {hasDesktop ? (
+          <CarouselWrapper images={desktopImages} isHome={true} />
+        ) : (
+          <div className="w-full h-[320px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">No Image</div>
+        )}
+        <div className="portfolio-info flex flex-col gap-3 mt-4">
+          <div>
+            <h4 className="portfolio-title">{item.title}</h4>
+            <p className="portfolio-category">{item.category}</p>
+            {item.description && (
+              <p className="text-[0.95rem] text-text-muted mt-3 leading-relaxed">{item.description}</p>
+            )}
           </div>
-        </div>
-      )}
-      
-      <div className="relative w-full h-[320px] overflow-hidden bg-white">
-        <style>{`
-          .hide-scroll::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
-          }
-        `}</style>
-
-        {/* Desktop View container */}
-        <div className="hidden md:block w-full h-full">
-          <CarouselWrapper 
-            images={globalActiveView === 'desktop' ? desktopImages : mobileImages} 
-            viewName={globalActiveView === 'desktop' ? 'Desktop' : 'Mobile'}
-          />
-        </div>
-
-        {/* Mobile View container */}
-        <div className="block md:hidden w-full h-full">
-          <CarouselWrapper 
-            images={localActiveView === 'desktop' ? desktopImages : mobileImages} 
-            viewName={localActiveView === 'desktop' ? 'Desktop' : 'Mobile'}
-          />
-        </div>
-      </div>
-      
-      <div className="portfolio-info flex flex-col gap-3 mt-4">
-        <div>
-          <h4 className="portfolio-title">{item.title}</h4>
-          <p className="portfolio-category">{item.category}</p>
-          {item.description && (
-            <p className="text-[0.95rem] text-text-muted mt-3 leading-relaxed">{item.description}</p>
+          {item.websiteUrl && (
+            <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-bold text-accent-primary hover:underline mt-auto">
+              Visit Website
+              <ExternalLink className="w-4 h-4" />
+            </a>
           )}
         </div>
+      </article>
+    );
+  }
+
+  // Full Portfolio Page: Side-by-Side layout
+  return (
+    <article className="portfolio-card group flex flex-col mb-16 last:mb-0">
+      <style>{`
+        .hide-scroll::-webkit-scrollbar {
+          display: none !important;
+          width: 0 !important;
+          height: 0 !important;
+        }
+      `}</style>
+      
+      <div className="mb-6">
+        <h3 className="text-2xl font-bold mb-1">{item.title}</h3>
+        <p className="text-accent-primary font-semibold text-sm tracking-wide uppercase">{item.category}</p>
+        {item.description && (
+          <p className="text-[1rem] text-text-muted mt-4 max-w-3xl leading-relaxed">{item.description}</p>
+        )}
         {item.websiteUrl && (
-          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm font-bold text-accent-primary hover:underline mt-auto">
-            Visit Website
+          <a href={item.websiteUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-bold text-black hover:text-accent-primary mt-4 transition-colors">
+            Visit Live Project
             <ExternalLink className="w-4 h-4" />
           </a>
+        )}
+      </div>
+
+      <div className={`grid gap-8 items-start ${hasDesktop && hasMobile ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1'}`}>
+        {hasDesktop && (
+          <div className={`${hasMobile ? 'lg:col-span-8' : ''}`}>
+            <CarouselWrapper images={desktopImages} isHome={false} isMobileMockup={false} />
+          </div>
+        )}
+        
+        {hasMobile && (
+          <div className={`${hasDesktop ? 'lg:col-span-4' : 'max-w-sm mx-auto w-full'}`}>
+            <CarouselWrapper images={mobileImages} isHome={false} isMobileMockup={true} />
+          </div>
         )}
       </div>
     </article>
