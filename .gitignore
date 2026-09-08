@@ -42,3 +42,10 @@ yarn-error.log*
 next-env.d.ts
 
 backup.txt
+
+# Cloudflare Wrangler local secrets
+.dev.vars
+# Cloudflare Wrangler local data & build outputs
+.wrangler/
+.next/
+.vercel/
