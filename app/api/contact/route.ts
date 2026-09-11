@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { db } from '../../../lib/firebase-admin';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: Request) {
   try {
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) throw new Error('Missing required environment variable: RESEND_API_KEY');
+    const resend = new Resend(resendApiKey);
     const { name, email, message, type } = await req.json();
 
     let businessEmail = 'hello@corstack.dev';
