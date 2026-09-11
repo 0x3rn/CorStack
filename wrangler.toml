@@ -10,3 +10,7 @@ binding = "ASSETS"
 [[services]]
 binding = "WORKER_SELF_REFERENCE"
 service = "corstack"
+
+[observability.logs]
+enabled = false
+invocation_logs = true
