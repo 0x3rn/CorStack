@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { db } from '../../../lib/firebase-admin';
+import { db } from '@/lib/firebase-admin';
+import { apiError, assertSameOrigin, escapeHtml, HttpError } from '@/lib/http';
+import { contactSchema, parseBody } from '@/lib/validation';
+import { enforceRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
   try {
+    assertSameOrigin(req);
+    const { name, email, message, type } = await parseBody(req, contactSchema);
+    await enforceRateLimit(req, email, 'contact');
     const resendApiKey = process.env.RESEND_API_KEY;
-    if (!resendApiKey) throw new Error('Missing required environment variable: RESEND_API_KEY');
+    if (!resendApiKey) throw new HttpError(503, 'Messaging is temporarily unavailable.');
     const resend = new Resend(resendApiKey);
-    const { name, email, message, type } = await req.json();
 
     let businessEmail = 'hello@corstack.dev';
     let subjectPrefix = 'New Contact Message';
@@ -17,7 +22,7 @@ export async function POST(req: Request) {
       subjectPrefix = 'New Project Request';
     }
 
-    const formattedMessage = message.replace(/\n/g, '<br>');
+    const formattedMessage = escapeHtml(message).replace(/\n/g, '<br>');
 
     // 1. Notification Email HTML (To Corstack)
     const notificationHtml = `
@@ -42,7 +47,7 @@ export async function POST(req: Request) {
       <body>
         <div class="container">
           <div class="header" style="display: flex; align-items: center; justify-content: center; gap: 12px; background-color: #0a0a0f; padding: 30px 40px; text-align: center;">
-            <img src="https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/logo.png?alt=media&token=22e02e00-1a2d-4c44-ab03-bf35af099509" alt="Corstack Logo" style="height: 32px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 4px;" />
+            <img src="https://corstack.dev/logo.png" alt="Corstack Logo" style="height: 32px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 4px;" />
             <h1>Corstack Agency</h1>
           </div>
           <div class="content">
@@ -50,12 +55,12 @@ export async function POST(req: Request) {
             
             <div class="info-block">
               <div class="label">Sender Name</div>
-              <div class="value">${name}</div>
+              <div class="value">${escapeHtml(name)}</div>
             </div>
             
             <div class="info-block">
               <div class="label">Email Address</div>
-              <div class="value"><a href="mailto:${email}" style="color: #0055cc; text-decoration: none;">${email}</a></div>
+              <div class="value"><a href="mailto:${escapeHtml(email)}" style="color: #0055cc; text-decoration: none;">${escapeHtml(email)}</a></div>
             </div>
             
             <div class="info-block" style="margin-top: 32px;">
@@ -94,11 +99,11 @@ export async function POST(req: Request) {
       <body>
         <div class="container">
           <div class="header" style="display: flex; align-items: center; justify-content: center; gap: 12px; background-color: #0a0a0f; padding: 30px 40px; text-align: center;">
-            <img src="https://firebasestorage.googleapis.com/v0/b/corstack-dev.firebasestorage.app/o/logo.png?alt=media&token=22e02e00-1a2d-4c44-ab03-bf35af099509" alt="Corstack Logo" style="height: 32px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 4px;" />
+            <img src="https://corstack.dev/logo.png" alt="Corstack Logo" style="height: 32px; width: auto; object-fit: contain; background: white; padding: 4px; border-radius: 4px;" />
             <h1>Corstack</h1>
           </div>
           <div class="content">
-            <div class="greeting">Hi ${clientFirstName},</div>
+            <div class="greeting">Hi ${escapeHtml(clientFirstName)},</div>
             ${type === 'project' 
               ? `
                 <div class="body-text">
@@ -141,56 +146,28 @@ export async function POST(req: Request) {
       </html>
     `;
 
-    // Send Notification to Business
-    const businessResponse = await resend.emails.send({
-      from: `Corstack Leads <${businessEmail}>`,
-      to: [businessEmail],
-      replyTo: email,
-      subject: `${subjectPrefix}: ${name}`,
-      html: notificationHtml,
+    // Persist first: a failed database write must never be acknowledged or trigger email.
+    const lead = await db.collection('leads').add({
+      name, email, message, type, createdAt: new Date().toISOString(), status: 'new', deliveryStatus: 'pending',
     });
-
-    if (businessResponse.error) {
-      console.error('Failed to send business notification:', businessResponse.error);
-      throw new Error(businessResponse.error.message);
-    }
-
-    // Send Auto-Responder to Client
-    const clientResponse = await resend.emails.send({
-      from: `Corstack <${businessEmail}>`,
-      to: [email],
-      subject: `We've received your message, ${clientFirstName}!`,
-      html: autoResponderHtml,
-    });
-
-    if (clientResponse.error) {
-      console.error('Failed to send client auto-responder:', clientResponse.error);
-      // We don't throw here to avoid failing the overall request if only the auto-responder fails
-    }
-
-    // Save to Firestore
+    let deliveryStatus = 'sent';
     try {
-      await db.collection('leads').add({
-        name,
-        email,
-        message,
-        type: type || 'contact',
-        createdAt: new Date().toISOString(),
-        status: 'new'
-      });
-    } catch (dbError) {
-      console.error('Failed to save lead to database:', dbError);
+      const [businessResponse, clientResponse] = await Promise.all([
+        resend.emails.send({ from: `Corstack Leads <${businessEmail}>`, to: [businessEmail], replyTo: email,
+          subject: `${subjectPrefix}: ${name}`, html: notificationHtml }),
+        resend.emails.send({ from: `Corstack <${businessEmail}>`, to: [email], replyTo: businessEmail,
+          subject: `We've received your message, ${clientFirstName}!`, html: autoResponderHtml }),
+      ]);
+      if (businessResponse.error || clientResponse.error) {
+        deliveryStatus = 'failed';
+        console.error('Lead email delivery failed:', businessResponse.error, clientResponse.error);
+      }
+    } catch (error) {
+      deliveryStatus = 'failed';
+      console.error('Lead email delivery failed:', error);
     }
-
-    return NextResponse.json(
-      { success: true, message: 'Message sent successfully!' },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error('Contact Form Error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Email failed to send.' },
-      { status: 500 }
-    );
-  }
+    try { await db.collection('leads').doc(lead.id).update({ deliveryStatus }); }
+    catch (error) { console.error('Unable to record lead email delivery status:', error); }
+    return NextResponse.json({ success: true, message: 'Your message has been received.' });
+  } catch (error) { return apiError(error); }
 }

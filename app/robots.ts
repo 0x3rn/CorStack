@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: '/admin/',
+      disallow: ['/admin', '/api/', '/confirmation', '/payment-success'],
     },
     sitemap: 'https://corstack.dev/sitemap.xml',
   }

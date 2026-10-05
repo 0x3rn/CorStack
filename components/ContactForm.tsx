@@ -31,7 +31,7 @@ export default function ContactForm() {
         toast.error("Something went wrong. Please check your connection.");
         setIsSending(false);
       }
-    } catch (error) {
+    } catch {
       toast.error("Error connecting to server.");
       setIsSending(false);
     }

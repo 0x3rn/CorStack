@@ -1,68 +1,15 @@
-import { NextResponse, NextRequest } from 'next/server';
-import { db, adminAuth } from '../../../../../lib/firebase-admin';
+import { createCollectionHandlers } from '@/lib/admin-crud';
+import { collectionSchemas } from '@/lib/validation';
+import { apiError, HttpError } from '@/lib/http';
 
-async function verifyAdmin(request: Request) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) throw new Error('Unauthorized');
-
-  const token = authHeader.split('Bearer ')[1];
-  const decodedToken = await adminAuth.verifyIdToken(token);
-  
-  if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && decodedToken.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    throw new Error('Forbidden');
-  }
-  return decodedToken;
-}
-
-export async function POST(request: NextRequest, { params }: { params: Promise<{ collection: string }> }) {
+async function handle(method: 'POST' | 'PUT' | 'DELETE', request: Request, context: RouteContext<'/api/admin/collection/[collection]'>) {
   try {
-    await verifyAdmin(request);
-    const data = await request.json();
-    const resolvedParams = await params;
-    const coll = resolvedParams.collection;
-    
-    if (data.order === undefined) {
-      const snap = await db.collection(coll).get();
-      data.order = snap.size;
-    }
-    
-    const docRef = await db.collection(coll).add(data);
-    return NextResponse.json({ id: docRef.id, ...data });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
-  }
+    const { collection } = await context.params;
+    if (!Object.hasOwn(collectionSchemas, collection)) throw new HttpError(404, 'Collection not found.');
+    const name = collection as keyof typeof collectionSchemas;
+    return createCollectionHandlers(name, collectionSchemas[name])[method](request);
+  } catch (error) { return apiError(error); }
 }
-
-export async function PUT(request: NextRequest, { params }: { params: Promise<{ collection: string }> }) {
-  try {
-    await verifyAdmin(request);
-    const data = await request.json();
-    const { id, ...updateData } = data;
-    const resolvedParams = await params;
-    const coll = resolvedParams.collection;
-    
-    if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
-
-    await db.collection(coll).doc(id).update(updateData);
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
-  }
-}
-
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ collection: string }> }) {
-  try {
-    await verifyAdmin(request);
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-    const resolvedParams = await params;
-    const coll = resolvedParams.collection;
-    
-    if (!id) return NextResponse.json({ error: 'Missing ID' }, { status: 400 });
-
-    await db.collection(coll).doc(id).delete();
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
-  }
-}
+export const POST = (request: Request, context: RouteContext<'/api/admin/collection/[collection]'>) => handle('POST', request, context);
+export const PUT = (request: Request, context: RouteContext<'/api/admin/collection/[collection]'>) => handle('PUT', request, context);
+export const DELETE = (request: Request, context: RouteContext<'/api/admin/collection/[collection]'>) => handle('DELETE', request, context);

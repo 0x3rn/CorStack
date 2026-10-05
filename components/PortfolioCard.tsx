@@ -1,10 +1,11 @@
 "use client";
+import Image from "next/image";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { ExternalLink, ArrowDown } from 'lucide-react';
 import { PortfolioItem, PortfolioImage } from '../lib/types';
 
-function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, isActive: boolean, isHome?: boolean }) {
+function PortfolioSlide({ image, isHome, isMobileMockup }: { image: PortfolioImage, isHome?: boolean, isMobileMockup?: boolean }) {
   const [isScrollingUI, setIsScrollingUI] = useState(false);
   const [canScroll, setCanScroll] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -18,23 +19,16 @@ function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, is
     };
   }, []);
 
-  useEffect(() => {
-    if (!isActive) {
-      stopAutoScroll();
-      if (scrollContainerRef.current) scrollContainerRef.current.scrollTop = 0;
-    }
-  }, [isActive]);
-
-  const stopAutoScroll = () => {
+  const stopAutoScroll = useCallback(() => {
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
       animationRef.current = null;
     }
     isScrollingRef.current = false;
     setIsScrollingUI(false);
-  };
+  }, []);
 
-  const startAutoScroll = () => {
+  const startAutoScroll = useCallback(() => {
     if (isHome) return;
     if (!scrollContainerRef.current || isScrollingRef.current) return;
     
@@ -59,13 +53,13 @@ function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, is
     let simulatedElapsed = 0;
     
     if (scrollDirectionRef.current === 1) {
-      let t = y < 0.5 
+      const t = y < 0.5
         ? Math.sqrt(y / 2) 
         : 1 - 0.5 * Math.sqrt(Math.max(0, 2 - 2 * y));
       simulatedElapsed = t * durationDown;
     } else {
-      let y_up = 1 - y;
-      let t = y_up < 0.5 
+      const y_up = 1 - y;
+      const t = y_up < 0.5
         ? Math.sqrt(y_up / 2) 
         : 1 - 0.5 * Math.sqrt(Math.max(0, 2 - 2 * y_up));
       simulatedElapsed = durationDown + (t * durationUp);
@@ -98,7 +92,7 @@ function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, is
     };
     
     animationRef.current = requestAnimationFrame(animate);
-  };
+  }, [isHome]);
 
   useEffect(() => {
     if (isHome) return;
@@ -133,14 +127,7 @@ function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, is
       container.removeEventListener('mouseleave', handleLeave);
       container.removeEventListener('click', handleClick);
     };
-  }, [isHome]);
-
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
-    stopAutoScroll();
-  }, [image.url]);
+  }, [isHome, startAutoScroll, stopAutoScroll]);
 
   return (
     <div className="w-full h-full flex-shrink-0 snap-center relative" style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'none' }}>
@@ -149,20 +136,18 @@ function PortfolioSlide({ image, isActive, isHome }: { image: PortfolioImage, is
         className={`w-full h-full relative z-20 ${isHome ? 'overflow-hidden pointer-events-none' : 'overflow-y-auto cursor-ns-resize'} hide-scroll`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'none' }}
       >
-        <div className="min-h-full flex flex-col">
-          <img 
-            src={image.url} 
-            alt="Portfolio item"
-            className="w-full object-cover select-none pointer-events-none"
-            onLoad={(e) => {
-              const img = e.target as HTMLImageElement;
-              const container = scrollContainerRef.current;
-              if (container && img.clientHeight > container.clientHeight) {
-                setCanScroll(true);
-              }
-            }}
-          />
-        </div>
+        <Image unoptimized width={isMobileMockup ? 1200 : 1600} height={isMobileMockup ? 1600 : 1200}
+          src={image.url}
+          alt="Portfolio item"
+          className={`portfolio-mockup-image select-none pointer-events-none ${isHome ? "" : "portfolio-mockup-image-scrollable"}`}
+          onLoad={(e) => {
+            const img = e.target as HTMLImageElement;
+            const container = scrollContainerRef.current;
+            if (container && img.clientHeight > container.clientHeight) {
+              setCanScroll(true);
+            }
+          }}
+        />
       </div>
       
       {canScroll && !isHome && (
@@ -186,13 +171,6 @@ function CarouselWrapper({ images, isHome, isMobileMockup }: { images: Portfolio
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
-    setActiveIndex(0);
-    if (carouselRef.current) {
-      carouselRef.current.scrollLeft = 0;
-    }
-  }, [images]);
-
   if (images.length === 0) {
     return null;
   }
@@ -208,32 +186,35 @@ function CarouselWrapper({ images, isHome, isMobileMockup }: { images: Portfolio
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header Mockup */}
-      <div className={`w-full bg-[#f8fafc] px-4 py-3 flex gap-2 border border-black/5 relative z-10 ${isMobileMockup ? 'rounded-t-[2rem] justify-center items-center h-10' : 'rounded-t-xl'}`}>
-        {isMobileMockup ? (
-          <div className="w-12 h-1.5 rounded-full bg-black/10"></div>
-        ) : (
-          <>
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
-            <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
-          </>
-        )}
-      </div>
-
-      {/* Image Container */}
-      <div className={`relative w-full ${isHome ? 'h-[320px]' : (isMobileMockup ? 'h-[480px]' : 'h-[320px] sm:h-[480px]')} overflow-hidden bg-white border-x border-b border-black/5 ${isMobileMockup ? 'rounded-b-[2rem]' : 'rounded-b-xl'}`}>
-        <div 
-          ref={carouselRef}
-          onScroll={handleScroll}
-          className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scroll relative z-20"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none', touchAction: 'pan-x pan-y' }}
-        >
-          {images.map((img, idx) => (
-            <PortfolioSlide key={idx} image={img} isActive={idx === activeIndex} isHome={isHome} />
-          ))}
+    <div className="portfolio-carousel">
+      <div className="portfolio-mockup" data-device={isMobileMockup ? "phone" : "desktop"}>
+        {/* Browser controls sit above the image; the image fills the window edge to edge. */}
+        <div aria-hidden="true" className={`portfolio-mockup-toolbar ${isMobileMockup ? "justify-center" : ""}`}>
+          {isMobileMockup ? (
+            <div className="w-12 h-1.5 rounded-full bg-black/10"></div>
+          ) : (
+            <>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]"></div>
+            </>
+          )}
         </div>
+
+        {/* Image Container */}
+        <div className="portfolio-mockup-viewport">
+          <div
+            ref={carouselRef}
+            onScroll={handleScroll}
+            className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory hide-scroll z-20"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'none', touchAction: 'pan-x pan-y' }}
+          >
+            {images.map((img, idx) => (
+              <PortfolioSlide key={`${idx}:${img.url}:${activeIndex === idx}`} image={img} isHome={isHome} isMobileMockup={isMobileMockup} />
+            ))}
+          </div>
+        </div>
+
       </div>
 
       {/* Image Description */}
@@ -274,16 +255,25 @@ export default function PortfolioCard({ item, isHome = false }: PortfolioCardPro
   const hasDesktop = desktopImages.length > 0;
   const hasMobile = mobileImages.length > 0;
 
-  // On homepage, we only show desktop images, and we show them full width (simple)
+  // The homepage switches between the desktop and phone windows at the mobile breakpoint.
   if (isHome) {
     return (
       <article className="portfolio-card group flex flex-col">
-        {hasDesktop ? (
-          <CarouselWrapper images={desktopImages} isHome={true} />
-        ) : (
-          <div className="w-full h-[320px] bg-gray-100 rounded-xl flex items-center justify-center text-gray-400">No Image</div>
-        )}
-        <div className="portfolio-info flex flex-col gap-3 mt-4">
+        <div className="hidden md:block">
+          {hasDesktop ? (
+            <CarouselWrapper key={desktopImages.map(image => image.url).join("|")} images={desktopImages} isHome />
+          ) : (
+            <div className="portfolio-mockup" data-device="desktop"><div className="portfolio-mockup-toolbar" aria-hidden="true" /><div className="portfolio-mockup-viewport"><span className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400">No Image</span></div></div>
+          )}
+        </div>
+        <div className="md:hidden">
+          {hasMobile || hasDesktop ? (
+            <CarouselWrapper key={(hasMobile ? mobileImages : desktopImages).map(image => image.url).join("|")} images={hasMobile ? mobileImages : desktopImages} isHome isMobileMockup />
+          ) : (
+            <div className="portfolio-mockup" data-device="phone"><div className="portfolio-mockup-toolbar" aria-hidden="true" /><div className="portfolio-mockup-viewport"><span className="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400">No Image</span></div></div>
+          )}
+        </div>
+        <div className="portfolio-info flex flex-col gap-3">
           <div>
             <h4 className="portfolio-title">{item.title}</h4>
             <p className="portfolio-category">{item.category}</p>
@@ -330,13 +320,13 @@ export default function PortfolioCard({ item, isHome = false }: PortfolioCardPro
       <div className={`grid gap-8 items-start ${hasDesktop && hasMobile ? 'grid-cols-1 lg:grid-cols-12' : 'grid-cols-1'}`}>
         {hasDesktop && (
           <div className={`${hasMobile ? 'lg:col-span-8' : ''}`}>
-            <CarouselWrapper images={desktopImages} isHome={false} isMobileMockup={false} />
+            <CarouselWrapper key={desktopImages.map(image => image.url).join("|")} images={desktopImages} isHome={false} isMobileMockup={false} />
           </div>
         )}
         
         {hasMobile && (
           <div className={`${hasDesktop ? 'lg:col-span-4' : 'max-w-sm mx-auto w-full'}`}>
-            <CarouselWrapper images={mobileImages} isHome={false} isMobileMockup={true} />
+            <CarouselWrapper key={mobileImages.map(image => image.url).join("|")} images={mobileImages} isHome={false} isMobileMockup={true} />
           </div>
         )}
       </div>

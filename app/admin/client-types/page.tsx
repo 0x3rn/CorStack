@@ -1,9 +1,9 @@
 "use client";
+import { fetchJson } from "@/lib/client-http";
+import type { PublicContent } from "@/lib/types";
 
-import { useEffect, useState } from "react";
-import { auth } from "../../../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 import toast from "react-hot-toast";
 
 interface ClientTypeItem {
@@ -15,8 +15,7 @@ interface ClientTypeItem {
 }
 
 export default function AdminClientTypesPage() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+  const [user, loading] = useAdminAuth();
   const [items, setItems] = useState<ClientTypeItem[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -24,30 +23,14 @@ export default function AdminClientTypesPage() {
   const [currentItem, setCurrentItem] = useState<ClientTypeItem | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      } else {
-        fetchItems();
-      }
-    }
-  }, [user, loading, router]);
 
-  const fetchItems = async () => {
-    try {
-      const res = await fetch('/api/content');
-      const data = await res.json();
-      setItems(data.clientTypes || []);
-    } catch (e) {
-      toast.error('Failed to fetch client types');
-    } finally {
-      setIsFetching(false);
-    }
-  };
+
+  const fetchItems = useCallback(() => fetchJson<PublicContent>('/api/content')
+    .then(data => setItems(data.clientTypes))
+    .catch(() => toast.error('Failed to load client-types'))
+    .finally(() => setIsFetching(false)), []);
+
+  useEffect(() => { if (user) void fetchItems(); }, [user, fetchItems]);
 
   const handleEdit = (item: ClientTypeItem) => {
     setCurrentItem({ ...item });
@@ -87,7 +70,7 @@ export default function AdminClientTypesPage() {
       toast.success('Saved successfully');
       setIsEditing(false);
       fetchItems();
-    } catch (e) {
+    } catch {
       toast.error('Failed to save');
     } finally {
       setIsSaving(false);
@@ -109,7 +92,7 @@ export default function AdminClientTypesPage() {
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Deleted successfully');
       fetchItems();
-    } catch (e) {
+    } catch {
       toast.error('Failed to delete');
     }
   };
@@ -119,7 +102,7 @@ export default function AdminClientTypesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Manage 'Who We Work With'</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Manage &apos;Who We Work With&apos;</h1>
         {!isEditing && (
           <button onClick={handleCreateNew} className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800">
             Add Client Type

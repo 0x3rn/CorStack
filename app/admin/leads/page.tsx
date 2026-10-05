@@ -1,9 +1,8 @@
 "use client";
+import { fetchJson } from "@/lib/client-http";
 
-import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 import toast from "react-hot-toast";
 
 interface Lead {
@@ -18,8 +17,7 @@ interface Lead {
 }
 
 export default function AdminDashboard() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+  const [user, loading] = useAdminAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoadingLeads, setIsLoadingLeads] = useState(true);
 
@@ -30,39 +28,17 @@ export default function AdminDashboard() {
   const [editCurrency, setEditCurrency] = useState<'usd' | 'ngn'>('usd');
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      } else {
-        fetchLeads();
-      }
-    }
-  }, [user, loading, router]);
 
-  const fetchLeads = async () => {
-    if (!user) return;
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/admin/leads', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!res.ok) throw new Error('Failed to fetch leads');
-      
-      const data = await res.json();
-      setLeads(data.leads || []);
-    } catch (error) {
-      console.error("Error fetching leads:", error);
-    } finally {
-      setIsLoadingLeads(false);
-    }
-  };
+
+  const fetchLeads = useCallback(() => {
+    if (!user) return Promise.resolve();
+    return user.getIdToken().then(token => fetchJson<{ leads: Lead[] }>('/api/admin/leads', { headers: { Authorization: 'Bearer ' + token } }))
+      .then(data => setLeads(data.leads))
+      .catch(() => toast.error('Failed to load leads'))
+      .finally(() => setIsLoadingLeads(false));
+  }, [user]);
+
+  useEffect(() => { if (user) void fetchLeads(); }, [user, fetchLeads]);
 
   const markAsRead = async (id: string, currentStatus: string) => {
     if (currentStatus !== 'new' || !user) return;
@@ -89,7 +65,7 @@ export default function AdminDashboard() {
   const startEditing = (lead: Lead) => {
     setEditingLeadId(lead.id);
     setEditStatus(lead.status);
-    setEditPrice(lead.actualPricePaid || '');
+    setEditPrice(lead.actualPricePaid ?? '');
     setEditCurrency(lead.currency || 'usd');
   };
 
@@ -98,7 +74,7 @@ export default function AdminDashboard() {
     setIsSaving(true);
     try {
       const token = await user.getIdToken();
-      const payload: any = { id, status: editStatus };
+      const payload: { id: string; status: string; actualPricePaid?: number; currency?: "usd" | "ngn" } = { id, status: editStatus };
       if (editPrice !== '') {
         payload.actualPricePaid = Number(editPrice);
         payload.currency = editCurrency;

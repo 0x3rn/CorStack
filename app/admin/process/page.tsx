@@ -1,9 +1,9 @@
 "use client";
+import { fetchJson } from "@/lib/client-http";
+import type { PublicContent } from "@/lib/types";
 
-import { useEffect, useState } from "react";
-import { auth } from "../../../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 import toast from "react-hot-toast";
 
 interface ProcessItem {
@@ -14,8 +14,7 @@ interface ProcessItem {
 }
 
 export default function AdminProcessPage() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+  const [user, loading] = useAdminAuth();
   const [items, setItems] = useState<ProcessItem[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -23,30 +22,14 @@ export default function AdminProcessPage() {
   const [currentItem, setCurrentItem] = useState<ProcessItem | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      } else {
-        fetchItems();
-      }
-    }
-  }, [user, loading, router]);
 
-  const fetchItems = async () => {
-    try {
-      const res = await fetch('/api/content');
-      const data = await res.json();
-      setItems(data.process || []);
-    } catch (e) {
-      toast.error('Failed to fetch process');
-    } finally {
-      setIsFetching(false);
-    }
-  };
+
+  const fetchItems = useCallback(() => fetchJson<PublicContent>('/api/content')
+    .then(data => setItems(data.process))
+    .catch(() => toast.error('Failed to load process'))
+    .finally(() => setIsFetching(false)), []);
+
+  useEffect(() => { if (user) void fetchItems(); }, [user, fetchItems]);
 
   const handleEdit = (item: ProcessItem) => {
     setCurrentItem({ ...item });
@@ -85,7 +68,7 @@ export default function AdminProcessPage() {
       toast.success('Saved successfully');
       setIsEditing(false);
       fetchItems();
-    } catch (e) {
+    } catch {
       toast.error('Failed to save');
     } finally {
       setIsSaving(false);
@@ -107,7 +90,7 @@ export default function AdminProcessPage() {
       if (!res.ok) throw new Error('Failed to delete');
       toast.success('Deleted successfully');
       fetchItems();
-    } catch (e) {
+    } catch {
       toast.error('Failed to delete');
     }
   };

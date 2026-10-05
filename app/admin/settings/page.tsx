@@ -1,14 +1,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { auth } from '../../../lib/firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 
 export default function SettingsPage() {
-  const [user, authLoading] = useAuthState(auth);
-  const router = useRouter();
+  const [user] = useAdminAuth();
   
   const [general, setGeneral] = useState({
     heroHeadline: '',
@@ -26,25 +22,15 @@ export default function SettingsPage() {
     usdEmail: ''
   });
 
+  const [isFetching, setIsFetching] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-
-  // Admin verification
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      }
-    }
-  }, [user, authLoading, router]);
 
   // Load initial data
   useEffect(() => {
     fetch('/api/content')
-      .then(res => res.json())
+      .then(res => { if (!res.ok) throw new Error('Failed to load settings'); return res.json(); })
       .then(data => {
         const { settings } = data;
         if (settings?.general) {
@@ -54,15 +40,16 @@ export default function SettingsPage() {
           setContact(prev => ({ ...prev, ...settings.contact }));
         }
       })
-      .catch(err => console.error("Failed to load settings:", err));
+      .catch(() => setLoadError('Settings could not be loaded. Please retry before editing.'))
+      .finally(() => setIsFetching(false));
   }, []);
 
-  const handleSave = async (docId: 'general' | 'contact', data: any) => {
+  const handleSave = async (docId: 'general' | 'contact', data: typeof general | typeof contact) => {
     setLoading(true);
     setMessage('');
     
     try {
-      const token = await auth.currentUser?.getIdToken();
+      const token = await user?.getIdToken();
       if (!token) throw new Error("Not authenticated");
 
       const res = await fetch('/api/admin/settings', {
@@ -77,13 +64,15 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error('Failed to update settings');
       
       setMessage(`${docId} settings saved successfully! Refresh the page to see changes on the frontend.`);
-    } catch (err: any) {
-      setMessage(`Error: ${err.message}`);
+    } catch (err) {
+      setMessage(`Error: ${err instanceof Error ? err.message : 'Unable to save settings'}`);
     } finally {
       setLoading(false);
     }
   };
 
+  if (isFetching) return <div>Loading settings...</div>;
+  if (loadError) return <div role="alert" className="flex flex-col gap-4"><p>{loadError}</p><button className="btn btn-primary" onClick={() => window.location.reload()}>Retry</button></div>;
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Settings</h1>

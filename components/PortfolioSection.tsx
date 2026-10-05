@@ -13,7 +13,7 @@ export default function PortfolioSection({ portfolio, isHome = false }: Portfoli
       <div className="centered">
         <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Portfolio</span>
         <h2 className="section-title">Selected Work</h2>
-        <p className="section-subtitle">Explore some of our recent projects and see how thoughtful design and development can tranform an online presence.</p>
+        <p className="section-subtitle">Explore some of our recent projects and see how thoughtful design and development can transform an online presence.</p>
       </div>
       
       <div className="portfolio-grid mt-12">
@@ -23,7 +23,7 @@ export default function PortfolioSection({ portfolio, isHome = false }: Portfoli
           ))
         ) : (
           <div className="col-span-full text-center text-gray-500 py-12">
-            Portfolio items will appear here once added.
+            New projects are coming soon.
           </div>
         )}
       </div>

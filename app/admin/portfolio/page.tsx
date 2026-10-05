@@ -1,17 +1,18 @@
 "use client";
+import { fetchJson } from "@/lib/client-http";
+import type { PublicContent } from "@/lib/types";
+import Image from "next/image";
 
-import { useEffect, useState } from "react";
-import { auth, storage } from "../../../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { getFirebaseStorage } from '@/lib/firebase';
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 
 import { PortfolioItem, PortfolioImage } from "../../../lib/types";
 
 export default function AdminPortfolioPage() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+  const [user, loading] = useAdminAuth();
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -25,36 +26,17 @@ export default function AdminPortfolioPage() {
   const [desktopLinkInput, setDesktopLinkInput] = useState("");
   const [mobileLinkInput, setMobileLinkInput] = useState("");
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      } else {
-        fetchPortfolio();
-      }
-    }
-  }, [user, loading, router]);
 
-  const fetchPortfolio = async () => {
-    try {
-      const res = await fetch('/api/content');
-      const data = await res.json();
-      
-      const mappedPortfolio = (data.portfolio || []).map((item: any) => ({
-        ...item,
-        desktopImages: item.desktopImages || (item.desktopImageUrls || []).map((url: string) => ({ url, description: "" })),
-        mobileImages: item.mobileImages || (item.mobileImageUrls || []).map((url: string) => ({ url, description: "" }))
-      }));
-      setItems(mappedPortfolio);
-    } catch (e) {
-      toast.error('Failed to fetch portfolio');
-    } finally {
-      setIsFetching(false);
-    }
-  };
+
+  const fetchPortfolio = useCallback(() => fetchJson<PublicContent>('/api/content')
+    .then(data => setItems(data.portfolio.map(item => ({ ...item,
+        desktopImages: item.desktopImages || (item.desktopImageUrls || (item.imageUrl ? [item.imageUrl] : [])).map(url => ({ url })),
+        mobileImages: item.mobileImages || (item.mobileImageUrls || []).map(url => ({ url })),
+      }))))
+    .catch(() => toast.error('Failed to load portfolio'))
+    .finally(() => setIsFetching(false)), []);
+
+  useEffect(() => { if (user) void fetchPortfolio(); }, [user, fetchPortfolio]);
 
   const handleEdit = (item: PortfolioItem) => {
     setCurrentItem({
@@ -81,7 +63,7 @@ export default function AdminPortfolioPage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
     const file = e.target.files?.[0];
-    if (!file || !currentItem) return;
+    if (!file || !currentItem || isUploading) return;
     
     const currentImages = type === 'desktop' ? (currentItem.desktopImages || []) : (currentItem.mobileImages || []);
     if (currentImages.length >= 5) {
@@ -89,7 +71,12 @@ export default function AdminPortfolioPage() {
       return;
     }
 
-    const storageRef = ref(storage, `portfolio/${Date.now()}_${file.name}`);
+    if (!['image/png', 'image/jpeg', 'image/webp', 'image/avif'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+      toast.error('Choose a PNG, JPEG, WebP, or AVIF image under 10 MB.');
+      return;
+    }
+    try {
+    const storageRef = ref(getFirebaseStorage(), `portfolio/${crypto.randomUUID()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     setIsUploading(true);
@@ -98,28 +85,29 @@ export default function AdminPortfolioPage() {
         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         setUploadProgress(progress);
       }, 
-      (error) => {
+      () => {
         toast.error("Image upload failed");
         setIsUploading(false);
       }, 
       async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        const newImage: PortfolioImage = { url: downloadURL, description: "" };
-        const updatedImages = [...currentImages, newImage];
-        
-        if (type === 'desktop') {
-          setCurrentItem({ ...currentItem, desktopImages: updatedImages });
-        } else {
-          setCurrentItem({ ...currentItem, mobileImages: updatedImages });
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const field = type === 'desktop' ? 'desktopImages' : 'mobileImages';
+          setCurrentItem(item => item ? { ...item, [field]: [...(item[field] || []), { url: downloadURL, description: '' }].slice(0, 5) } : item);
+          toast.success('Image uploaded!');
+        } catch {
+          toast.error('Could not retrieve the uploaded image. Please try again.');
+        } finally {
+          setIsUploading(false);
+          setUploadProgress(0);
+          e.target.value = '';
         }
-        
-        setIsUploading(false);
-        setUploadProgress(0);
-        toast.success("Image uploaded!");
-        
-        if (e.target) e.target.value = '';
       }
     );
+    } catch {
+      toast.error('Storage is unavailable. Check the Firebase configuration.');
+      setIsUploading(false);
+    }
   };
 
   const handleAddLink = (type: 'desktop' | 'mobile') => {
@@ -192,7 +180,7 @@ export default function AdminPortfolioPage() {
     e.preventDefault();
     if (!currentItem || !user) return;
 
-    let finalItem = { ...currentItem };
+    const finalItem = { ...currentItem };
     
     // Auto-consume dangling desktop link
     const desktopImages = finalItem.desktopImages || [];
@@ -246,8 +234,8 @@ export default function AdminPortfolioPage() {
       toast.success('Saved successfully');
       setIsEditing(false);
       fetchPortfolio();
-    } catch (e: any) {
-      toast.error(`Failed to save: ${e.message}`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to save project");
     } finally {
       setIsSaving(false);
     }
@@ -270,7 +258,7 @@ export default function AdminPortfolioPage() {
       
       toast.success('Deleted successfully');
       fetchPortfolio();
-    } catch (e) {
+    } catch {
       toast.error('Failed to delete');
     }
   };
@@ -293,7 +281,7 @@ export default function AdminPortfolioPage() {
         <form onSubmit={handleSave} className="bg-white rounded-xl shadow-soft p-6 border border-black/5 flex flex-col gap-5">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-xl font-bold">{currentItem.id ? 'Edit Item' : 'New Item'}</h2>
-            <button type="button" onClick={() => setIsEditing(false)} className="text-gray-500 hover:text-black">Cancel</button>
+            <button type="button" disabled={isUploading || isSaving} onClick={() => setIsEditing(false)} className="text-gray-500 hover:text-black">Cancel</button>
           </div>
           
           <div className="grid grid-cols-2 gap-4">
@@ -334,7 +322,7 @@ export default function AdminPortfolioPage() {
             <label htmlFor="showOnHome" className="text-sm font-semibold cursor-pointer select-none">Show this item on the homepage snippet</label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 border-t pt-6">
+          <fieldset disabled={isUploading || isSaving} className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 border-t pt-6">
             {/* Desktop Images */}
             <div>
               <label className="block text-sm font-semibold mb-2">Desktop Images (Max 5)</label>
@@ -344,7 +332,7 @@ export default function AdminPortfolioPage() {
                     {currentItem.desktopImages?.map((img, idx) => (
                       <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 flex flex-col bg-gray-50">
                         <div className="relative aspect-video">
-                          <img src={img.url} alt={`Desktop ${idx + 1}`} className="w-full h-full object-cover" />
+                          <Image unoptimized width={1200} height={800} src={img.url} alt={`Desktop ${idx + 1}`} className="w-full h-full object-cover" />
                           <button 
                             type="button" 
                             onClick={() => removeImage(idx, 'desktop')}
@@ -410,7 +398,7 @@ export default function AdminPortfolioPage() {
                     {currentItem.mobileImages?.map((img, idx) => (
                       <div key={idx} className="relative group rounded-lg overflow-hidden border border-black/10 flex flex-col bg-gray-50">
                         <div className="relative aspect-[9/16]">
-                          <img src={img.url} alt={`Mobile ${idx + 1}`} className="w-full h-full object-cover" />
+                          <Image unoptimized width={1200} height={800} src={img.url} alt={`Mobile ${idx + 1}`} className="w-full h-full object-cover" />
                           <button 
                             type="button" 
                             onClick={() => removeImage(idx, 'mobile')}
@@ -466,7 +454,7 @@ export default function AdminPortfolioPage() {
                 )}
               </div>
             </div>
-          </div>
+          </fieldset>
           
           {isUploading && <div className="text-xs text-accent-primary mt-1 font-semibold">Uploading: {Math.round(uploadProgress)}%</div>}
           
@@ -479,7 +467,7 @@ export default function AdminPortfolioPage() {
           {items.map(item => (
             <div key={item.id} className="bg-white rounded-xl shadow-soft p-6 border border-black/5 flex justify-between items-center gap-4">
               <div className="flex items-center gap-4">
-                <img src={item.desktopImages?.[0]?.url || item.mobileImages?.[0]?.url || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
+                <Image unoptimized width={1200} height={800} src={item.desktopImages?.[0]?.url || item.mobileImages?.[0]?.url || item.imageUrl || ''} alt={item.title} className="w-16 h-16 object-cover rounded-lg border border-black/10 shrink-0" />
                 <div>
                   <h3 className="font-bold text-lg">{item.title}</h3>
                   <p className="text-sm text-text-muted mt-1">

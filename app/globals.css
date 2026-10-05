@@ -263,15 +263,73 @@
   }
 
   .portfolio-grid {
-    @apply grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-8 max-w-[1400px] mx-auto;
+    @apply grid gap-8 max-w-[1400px] mx-auto;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   }
 
   .portfolio-card {
     @apply overflow-hidden bg-white cursor-pointer;
+    border: 0;
+  }
+
+  /* The inner window alone is 1600:1200 or 1200:1600. Chrome sits outside it. */
+  .portfolio-carousel { min-width: 0; }
+
+  .portfolio-mockup {
+    width: 100%;
+    overflow: hidden;
+    border: 0;
+    padding: 0;
+    border-radius: 12px 12px 0 0;
+    background: white;
+  }
+
+  .portfolio-mockup[data-device="phone"] { border-radius: 32px 32px 0 0; }
+
+  .portfolio-mockup-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 16px;
+    border-bottom: 1px solid rgb(0 0 0 / 0.05);
+    background: #f8fafc;
+  }
+
+  .portfolio-mockup[data-device="phone"] .portfolio-mockup-toolbar { height: 40px; }
+
+  .portfolio-mockup-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    background: white;
+  }
+
+  .portfolio-mockup[data-device="phone"] .portfolio-mockup-viewport { aspect-ratio: 3 / 4; }
+
+  .portfolio-mockup-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    object-fit: cover;
+    object-position: top center;
+  }
+
+  /* Long screenshots can scroll on the gallery page without leaving empty space. */
+  .portfolio-mockup-image-scrollable {
+    height: auto;
+    min-height: 100%;
   }
 
   .portfolio-info {
-    @apply p-6 bg-white relative z-10 border-t border-black/[0.05];
+    @apply p-6 bg-white relative z-10;
   }
 
   .portfolio-title {

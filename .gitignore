@@ -33,10 +33,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-
+.env.local*
+.env.example*
 # vercel
 .vercel
-
+tests/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -49,3 +50,10 @@ backup.txt
 .wrangler/
 .next/
 .vercel/
+
+.open-next/
+.env.local
+!/.env.example
+
+# Database exports contain private leads and payment records.
+/scripts/db-backup.json

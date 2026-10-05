@@ -1,12 +1,14 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
-import ContactForm from '../components/ContactForm';
-import ClientPricing from '../components/ClientPricing';
-import PortfolioSection from '../components/PortfolioSection';
-import { DynamicIcon } from '../components/DynamicIcon';
-import { getPublicContent } from '../lib/db/content';
-import { XCircle, PenTool, Smartphone, Zap, Rocket, LifeBuoy, CheckCircle, ExternalLink, ChevronDown } from 'lucide-react';
+import ContactForm from '@/components/ContactForm';
+import ClientPricing from '@/components/ClientPricing';
+import PortfolioSection from '@/components/PortfolioSection';
+import { DynamicIcon } from '@/components/DynamicIcon';
+import { getPublicContent } from '@/lib/db/content';
+import { XCircle, PenTool, Smartphone, Zap, Rocket, LifeBuoy, CheckCircle, ChevronDown } from 'lucide-react';
 
-export const revalidate = 60; // Revalidate every minute if using statically generated layout
+
+export const metadata: Metadata = { alternates: { canonical: '/' } };
 
 export default async function HomePage() {
   const content = await getPublicContent();
@@ -52,7 +54,7 @@ export default async function HomePage() {
           </div>
         )}
         <span className="hero-eyebrow">Custom Web Design & Development</span>
-        <h1 className="hero-title">{settings?.general?.heroHeadline}</h1>
+        <h1 className="hero-title">{settings?.general?.heroHeadline || 'Websites built to grow your business'}</h1>
         <p className="hero-subtitle">
           {settings?.general?.heroSubtitle}
         </p>
@@ -127,7 +129,7 @@ export default async function HomePage() {
         <div className="centered">
           <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Why Choose Corstack</span>
           <h2 className="section-title">Designed With Purpose. Built for Results.</h2>
-          <p className="section-subtitle">We don't believe in one-size-fits-all solutions. Every project is approached with careful planning, thoughtful design, and a focus on long-term value.</p>
+          <p className="section-subtitle">We don&apos;t believe in one-size-fits-all solutions. Every project is approached with careful planning, thoughtful design, and a focus on long-term value.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-[1400px] mx-auto">
@@ -199,7 +201,7 @@ export default async function HomePage() {
         <div className="centered">
           <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Process</span>
           <h2 className="section-title">A straightforward process.</h2>
-          <p className="section-subtitle">Great projects come from collaboration, transparency, and clear communication. Here's how we bring your website to life</p>
+          <p className="section-subtitle">Great projects come from collaboration, transparency, and clear communication. Here&apos;s how we bring your website to life</p>
         </div>
         
         <ol className="process-steps">

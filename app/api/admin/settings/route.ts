@@ -1,37 +1,18 @@
 import { NextResponse } from 'next/server';
-import { db, adminAuth } from '../../../../lib/firebase-admin';
-
-async function verifyAdmin(request: Request) {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) throw new Error('Unauthorized');
-
-  const token = authHeader.split('Bearer ')[1];
-  const decodedToken = await adminAuth.verifyIdToken(token);
-  
-  if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && decodedToken.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-    throw new Error('Forbidden');
-  }
-  return decodedToken;
-}
-
-import { revalidatePath } from 'next/cache';
+import { z } from 'zod';
+import { db } from '@/lib/firebase-admin';
+import { verifyAdmin } from '@/lib/admin';
+import { apiError, assertSameOrigin, readJson } from '@/lib/http';
+import { parse, generalSchema, contactSettingsSchema } from '@/lib/validation';
 
 export async function PUT(request: Request) {
   try {
+    assertSameOrigin(request);
     await verifyAdmin(request);
-    const data = await request.json();
-    const { docId, ...updateData } = data; // docId should be 'general' or 'contact'
-    
-    if (!docId) return NextResponse.json({ error: 'Missing document ID' }, { status: 400 });
-
-    await db.collection('settings').doc(docId).set(updateData, { merge: true });
-    
-    // Invalidate the cache for public content and the homepage
-    revalidatePath('/api/content');
-    revalidatePath('/');
-
+    const { docId, ...data } = parse(z.record(z.string(), z.unknown()), await readJson(request));
+    const id = parse(z.enum(['general', 'contact']), docId);
+    const fields = id === 'general' ? parse(generalSchema, data) : parse(contactSettingsSchema, data);
+    await db.collection('settings').doc(id).set(fields, { merge: true });
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: error.message === 'Forbidden' ? 403 : 401 });
-  }
+  } catch (error) { return apiError(error); }
 }

@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -24,7 +25,7 @@ export default function Footer({ settings }: FooterProps) {
       <div className="footer-top max-w-[1400px] mx-auto px-[5%] grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
         <div className="footer-brand md:col-span-1 flex flex-col items-start gap-4">
           <h2 className="footer-logo text-2xl font-bold flex items-center gap-3">
-            <img src="/logo.png" alt="Corstack Logo" className="w-8 h-8 object-contain" />
+            <Image unoptimized width={120} height={40} src="/logo.png" alt="Corstack Logo" className="w-8 h-8 object-contain" />
             corstack.
           </h2>
           <p className="text-gray-400 text-[0.95rem] leading-relaxed max-w-[280px]">Reliable web design and development made for you.</p>

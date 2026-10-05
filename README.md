@@ -1,79 +1,52 @@
-# Corstack | Premium Web Agency Platform
+# Corstack
 
-> A high-performance, full-stack agency platform engineered for premium design, conversion optimization, and lightning-fast SEO performance.
+Next.js agency website with a Firebase-backed admin dashboard, project requests, portfolio uploads, Resend email delivery, and optional hosted checkout. Cloudflare Workers hosts the application through OpenNext.
 
-Corstack is a bespoke digital agency website built to capture leads and process global client payments. It features an elegant UI with glassmorphic accents, cinematic scroll animations, dynamic geolocation logic for localized pricing, and a serverless backend architecture.
+## Local development
 
-## 🛠️ Tech Stack
+Use Node.js 24 and npm. Install with `npm ci`, copy `.env.example` to `.env.local`, set the values, and run `npm run dev`.
 
-**Frontend:**
-*   **Next.js (App Router)** - React framework for server-side rendering and SEO optimization.
-*   **TypeScript** - For strict type-checking and robust code architecture.
-*   **Tailwind CSS** - Utility-first CSS for highly responsive, custom styling.
-*   **GSAP & React-Lenis** - For premium float-up reveal animations and buttery-smooth momentum scrolling.
-*   **React-Hot-Toast** - For modern, custom-styled alert notifications.
+The six `NEXT_PUBLIC_FIREBASE_*` values come from the Firebase web application configuration. They are browser configuration, not service-account secrets, and must be present **at build time** for admin login to work. Firebase initialization is deferred until the browser loads the admin area; a missing configuration shows an unavailable message instead of breaking the build.
 
-**Backend & APIs:**
-*   **Next.js Route Handlers** - Serverless backend API infrastructure.
-*   **Paystack API** - Secure, localized checkout sessions and payment processing.
-*   **Nodemailer** - Automated lead generation and contact form email routing.
-*   **ipapi.co** - IP Geolocation API to dynamically detect user country.
+Set `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, and `FIREBASE_PRIVATE_KEY` for server data access. The private key accepts escaped newline sequences. Set `ADMIN_UID` to the administrator's Firebase UID. Alternatively set `ADMIN_EMAIL`; email authorization requires a verified Firebase email. Missing admin configuration denies all access. The legacy `NEXT_PUBLIC_ADMIN_EMAIL` is supported server-side for existing deployments, but new deployments should use the private variables.
 
-## ✨ Key Features
+Set `RESEND_API_KEY` and verify the `corstack.dev` sending domain in Resend. Contact submissions are validated and persisted before any email is sent. Delivery failures are recorded on the lead without losing the request. Public content loads at request time; a database failure returns an error instead of publishing empty sections. The public pages and admin pages have separate layouts, so a content outage cannot prevent the login page from rendering.
 
-*   **Dynamic Geolocation Pricing:** Automatically detects if a user is visiting from Nigeria (NGN) or internationally (USD) and instantly updates the pricing tables using cached `localStorage`.
-*   **Serverless Payment Routing:** Securely connects to the Paystack API to generate localized checkout URLs based on the user's selected tier and currency.
-*   **Momentum Scroll & Reveals:** Replaces the standard browser scroll with an "Apple-style" momentum scroll, syncing with GSAP to fade and float elements into view as the user navigates the page.
-*   **Zero-Jank Transitions:** Utilizes Next.js `<Link>` components and a global `<SmoothScroll>` wrapper to navigate between pages instantly without layout shifts or white flashes.
-*   **Custom Checkout Modal:** Bypasses clunky browser prompts with a sleek, custom-built React modal to capture client emails before redirecting to the payment gateway.
+## Checks
 
-## 📂 Folder Structure
+- `npm run lint` checks JavaScript, TypeScript, React lifecycle rules, and ARIA attributes.
+- `npm run typecheck` checks types. Run `npx next typegen` after changing routes.
+- `npm test` runs isolated regression tests with mocked services.
+- `npm run build` produces the Next.js production build.
+- `npm run cloudflare:build` produces the Worker and assets.
+- `npm audit` checks the complete dependency tree.
 
-```text
-corstack/
-├── app/                  # Next.js App Router (Pages, Layout, Globals)
-│   ├── api/              # Serverless Backend Routes (Contact & Checkout)
-│   ├── services/         # Services Sub-page
-│   ├── privacy/          # Privacy Policy Page
-│   ├── terms/            # Terms of Service Page
-│   └── success/          # Post-Submission / Payment Success Pages
-├── components/           # Reusable UI Components
-│   ├── Header.tsx        # Sticky Navigation
-│   ├── Footer.tsx        # Global Footer
-│   ├── ContactForm.tsx   # Client-side Form with Nodemailer integration
-│   ├── CheckoutModal.tsx # Custom Paystack Email Capture Modal
-│   └── SmoothScroll.tsx  # GSAP + Lenis Animation Wrapper
-├── hooks/                # Custom React Hooks
-│   └── usePricing.ts     # IP Detection & Currency State Management
-└── public/               # Static Assets (Images, Favicon)
+The lint plugins are configured directly because the current Next.js lint configuration depends on an unpatched `braces` release. React Hooks/Compiler and TypeScript rules remain enabled. Firebase's pinned gRPC dependency is overridden to its compatible 1.13.6 security patch.
 
-🚀 Getting Started (Local Development)
-To run this project locally on your machine, follow these steps:
-1. Clone the repository
-code
-Bash
-git clone https://github.com/your-username/corstack.git
-cd corstack
-2. Install dependencies
-code
-Bash
-npm install
-3. Set up Environment Variables
-Create a .env.local file in the root directory and add the following keys:
-code
-Env
-# Paystack API Key (Get this from your Paystack Dashboard)
-PAYSTACK_SECRET_KEY=sk_test_your_paystack_secret_key
+## Cloudflare preview and deployment
 
-# Gmail SMTP Credentials (Use a Google App Password)
-EMAIL_USER=your_agency_email@gmail.com
-EMAIL_PASS=your_google_app_password
-4. Run the development server
-code
-Bash
-npm run dev
-Open http://localhost:3000 with your browser to see the result.
-🌍 Deployment
-This project is fully optimized for Vercel.
-When deploying to Vercel, simply import the GitHub repository and ensure you add the PAYSTACK_SECRET_KEY, EMAIL_USER, and EMAIL_PASS variables into the Vercel Environment Variables settings before clicking deploy. Vercel will automatically convert the app/api/ folder into secure Serverless Functions.
-Designed & Developed by Somto Ike.
+Run `npm run preview` for the local Worker preview. Run `npm run deploy` only when ready to publish. Both use OpenNext Workers commands, not Cloudflare Pages.
+
+Supply browser configuration in the build environment and the server-only values as Worker secrets. For local Worker preview, put the server-only values in an ignored `.dev.vars` file. `SITE_URL` is the trusted canonical origin used by checkout and origin checks; change it for an alternate deployment. The production contact/checkout APIs require the `PUBLIC_API_RATE_LIMITER` binding in `wrangler.toml`. It allows five attempts per minute per email and client IP, per Cloudflare location. Development uses a bounded local limiter. A production server without the binding fails closed rather than sending unprotected emails.
+
+## Firebase storage access
+
+`firestore.rules` denies browser database access; data goes through server APIs. `storage.rules` allows public reads of portfolio assets and restricts writes to accounts with the `admin` custom claim, supported image MIME types, and a 10 MB limit. Upload filenames are generated by the client; public static logos remain in `public/`.
+
+After confirming the project and administrator UID, run `node --env-file=.env.local scripts/set-admin-claim.mjs` to set the storage claim. Publish rules to that confirmed Firebase project using `firebase deploy --only firestore:rules,storage --project <project-id>`. Sign out and back in to refresh the token. These commands change the live project and are separate from building or checking this repo. Existing live rules are not changed by a source edit.
+
+## Checkout
+
+The public pricing flow requests a project quote. The legacy checkout API supports explicit `basic` and `growth` tiers only. Set whole-naira `PAYSTACK_BASIC_AMOUNT` and `PAYSTACK_GROWTH_AMOUNT`, or Lemon Squeezy variant/store configuration. Prices are never taken from client input. Paystack creates a pending payment record; the status page verifies reference, amount, currency, and customer against the provider before displaying confirmation. Lemon Squeezy redirects display an awaiting-confirmation message; confirm its receipt in the provider dashboard before fulfilling a project. This application does not automatically fulfill orders.
+
+## Data scripts
+
+Use `node --env-file=.env.local scripts/dump-db.mjs` to back up application collections, including private leads and payment records, with document IDs. Keep this ignored export private; it is a JSON application backup, not a full Firebase project export. `seed-db.mjs` restores the public-content backup when present and otherwise uses defaults matching the current schema. Seed, client-type restore, and portfolio clearing require the explicit `--replace-existing` argument. Seed and client-type restore stage replacements in a single atomic batch, preserve backed-up IDs, and abort on invalid backups or more than 500 operations. Seed restores public content only; it never deletes or restores leads/payments. Destructive scripts must target the intended project. No data or storage migration is performed by these code changes.
+
+## Migration recommendation
+
+For this Cloudflare-hosted site, use Neon Postgres for structured data and R2 Standard storage for portfolio uploads. R2 supports Worker bindings, public custom domains with Cloudflare caching, and zero direct egress charges; storage and operation charges still apply. Keep files shipped in public/ with the app. Store object keys and image descriptions in Postgres, with a stable media domain for public reads. Keep Firebase Auth for the initial migration so identity changes do not overlap the database/storage cutover.
+
+Neon Object Storage is a valid alternative when files must branch together with database rows across preview environments. That feature is useful, but this site's publicly served portfolio images fit the existing Cloudflare setup well. See [R2 pricing](https://developers.cloudflare.com/r2/pricing/), [public buckets](https://developers.cloudflare.com/r2/buckets/public-buckets/), and [Neon storage branching](https://neon.com/blog/building-neon-object-storage).
+
+Before the live cutover, separately verify administrator sign-in, deployed Firebase rules, database access, a real upload, and email/payment provider configuration. Those credential-dependent checks were skipped at the user's request. Back up the database and storage objects, import into an isolated Neon branch and R2 bucket, compare record counts and file checksums, and test the full app before switching production. Keep the original Firebase data and files until the cutover is verified. No live migration or deployment has been performed.

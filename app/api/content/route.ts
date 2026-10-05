@@ -1,14 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getPublicContent } from '../../../lib/db/content';
-
-export const revalidate = 60;
-
+import { getPublicContent } from '@/lib/db/content';
+import { apiError } from '@/lib/http';
 export async function GET() {
-  try {
-    const content = await getPublicContent();
-    return NextResponse.json(content);
-  } catch (error: any) {
-    console.error('Failed to fetch public content:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-  }
+  try { return NextResponse.json(await getPublicContent(), { headers: { 'Cache-Control': 'no-store' } }); }
+  catch (error) { return apiError(error); }
 }

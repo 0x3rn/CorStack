@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -16,7 +17,7 @@ export default function Header() {
       <nav className="navbar">
         <div className="brand-logo">
           <Link href="/">
-            <img src="/logo.png" alt="Corstack Logo" className="nav-logo-img" />
+            <Image unoptimized width={120} height={40} src="/logo.png" alt="Corstack Logo" className="nav-logo-img" />
             <strong>corstack.</strong>
           </Link>
         </div>

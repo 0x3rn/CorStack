@@ -1,9 +1,8 @@
 "use client";
+import { fetchJson } from "@/lib/client-http";
 
-import { useEffect, useState } from "react";
-import { auth } from "../../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 import toast from "react-hot-toast";
 
 interface Lead {
@@ -14,47 +13,21 @@ interface Lead {
 }
 
 export default function OverviewDashboard() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+  const [user, loading] = useAdminAuth();
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      } else {
-        fetchLeads();
-      }
-    }
-  }, [user, loading, router]);
 
-  const fetchLeads = async () => {
-    if (!user) return;
-    try {
-      const token = await user.getIdToken();
-      const res = await fetch('/api/admin/leads', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Failed to fetch leads: ${res.status} ${errorText}`);
-      }
-      
-      const data = await res.json();
-      setLeads(data.leads || []);
-    } catch (error) {
-      console.error("Error fetching leads:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
+  const fetchLeads = useCallback(() => {
+    if (!user) return Promise.resolve();
+    return user.getIdToken().then(token => fetchJson<{ leads: Lead[] }>('/api/admin/leads', { headers: { Authorization: 'Bearer ' + token } }))
+      .then(data => setLeads(data.leads))
+      .catch(() => toast.error('Failed to load leads'))
+      .finally(() => setIsLoading(false));
+  }, [user]);
+
+  useEffect(() => { if (user) void fetchLeads(); }, [user, fetchLeads]);
 
   if (loading || isLoading) {
     return <div className="p-8 text-text-muted">Loading overview...</div>;

@@ -1,3 +1,4 @@
+import { replaceCollections } from './data-safety.mjs';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import fs from 'fs';
@@ -123,26 +124,26 @@ let portfolioItems = [
 let servicesItems = [
   {
     title: 'Custom Website Design',
-    desc: 'Bespoke designs tailored to your brand identity. We craft unique, modern, and engaging interfaces that captivate your audience.',
-    icon: 'layout',
+    description: 'Bespoke designs tailored to your brand identity. We craft unique, modern, and engaging interfaces that captivate your audience.',
+    iconName: 'layout',
     order: 0
   },
   {
     title: 'E-Commerce Development',
-    desc: 'Robust online stores built for conversion. From product catalogs to secure checkout, we handle the entire shopping experience.',
-    icon: 'shopping-cart',
+    description: 'Robust online stores built for conversion. From product catalogs to secure checkout, we handle the entire shopping experience.',
+    iconName: 'shopping-cart',
     order: 1
   },
   {
     title: 'Web App Development',
-    desc: 'Complex, interactive web applications built with modern frameworks. We turn your innovative ideas into powerful software.',
-    icon: 'code',
+    description: 'Complex, interactive web applications built with modern frameworks. We turn your innovative ideas into powerful software.',
+    iconName: 'code',
     order: 2
   },
   {
     title: 'SEO Optimization',
-    desc: 'Data-driven strategies to improve your search rankings. We optimize site structure, speed, and content for maximum visibility.',
-    icon: 'search',
+    description: 'Data-driven strategies to improve your search rankings. We optimize site structure, speed, and content for maximum visibility.',
+    iconName: 'search',
     order: 3
   }
 ];
@@ -150,22 +151,22 @@ let servicesItems = [
 let clientTypesItems = [
   {
     title: 'Startups',
-    desc: 'Agile and innovative solutions to help new ventures establish a strong digital footprint quickly.',
+    description: 'Agile and innovative solutions to help new ventures establish a strong digital footprint quickly.',
     order: 0
   },
   {
     title: 'E-Commerce',
-    desc: 'Scalable platforms designed to drive sales, manage inventory, and provide a seamless shopping experience.',
+    description: 'Scalable platforms designed to drive sales, manage inventory, and provide a seamless shopping experience.',
     order: 1
   },
   {
     title: 'Agencies',
-    desc: 'White-label development and robust technical partnerships to help agencies scale their service offerings.',
+    description: 'White-label development and robust technical partnerships to help agencies scale their service offerings.',
     order: 2
   },
   {
     title: 'Enterprises',
-    desc: 'Secure, high-performance web applications tailored for complex organizational workflows.',
+    description: 'Secure, high-performance web applications tailored for complex organizational workflows.',
     order: 3
   }
 ];
@@ -174,44 +175,40 @@ let processItems = [
   {
     step: '1',
     title: 'Discovery & Strategy',
-    desc: 'We start by understanding your goals, target audience, and unique requirements to formulate a comprehensive project roadmap.',
+    description: 'We start by understanding your goals, target audience, and unique requirements to formulate a comprehensive project roadmap.',
     order: 0
   },
   {
     step: '2',
     title: 'UI/UX Design',
-    desc: 'Our design team creates wireframes and high-fidelity mockups, ensuring an intuitive and visually stunning user experience.',
+    description: 'Our design team creates wireframes and high-fidelity mockups, ensuring an intuitive and visually stunning user experience.',
     order: 1
   },
   {
     step: '3',
     title: 'Development',
-    desc: 'We bring the designs to life using clean, scalable code and the latest web technologies for optimal performance.',
+    description: 'We bring the designs to life using clean, scalable code and the latest web technologies for optimal performance.',
     order: 2
   },
   {
     step: '4',
     title: 'Testing & Launch',
-    desc: 'Rigorous quality assurance across devices and browsers guarantees a flawless product ready for a successful launch.',
+    description: 'Rigorous quality assurance across devices and browsers guarantees a flawless product ready for a successful launch.',
     order: 3
   }
 ];
 
 let generalSettings = {
-  heroTitle: 'Crafting Digital Experiences',
+  heroHeadline: 'Crafting Digital Experiences',
   heroSubtitle: 'We build fast, secure, and beautiful web applications that drive results for your business.',
-  contactEmail: 'hello@corstack.com',
-  socialLinks: {
-    twitter: 'https://twitter.com/corstack',
-    linkedin: 'https://linkedin.com/company/corstack',
-    github: 'https://github.com/corstack'
-  }
+  isAcceptingProjects: true,
+  socialTwitter: 'https://twitter.com/corstack',
+  socialLinkedIn: 'https://linkedin.com/company/corstack',
+  socialInstagram: ''
 };
 
 let contactSettings = {
-  address: '123 Tech Lane, Innovation District',
-  phone: '+1 (555) 123-4567',
-  supportEmail: 'support@corstack.com'
+  ngnPhone: '', ngnEmail: 'hello@corstack.dev', usdPhone: '', usdEmail: 'hello@corstack.dev'
 };
 
 async function loadBackupIfExists() {
@@ -220,6 +217,8 @@ async function loadBackupIfExists() {
     console.log(`\n📦 Found db-backup.json! Loading seeded data from your backup...`);
     try {
       const backupData = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
+      if (!backupData || ['pricing','portfolio','services','clientTypes','process'].some(key => !Array.isArray(backupData[key])) || !backupData.settings?.general || !backupData.settings?.contact) throw new Error('Incomplete public-content backup.');
+      if (backupData.projectId && backupData.projectId !== serviceAccount.projectId) throw new Error('Backup belongs to a different Firebase project.');
       if (backupData.pricing) pricingTiers = backupData.pricing;
       if (backupData.portfolio) {
         portfolioItems = backupData.portfolio.map(item => {
@@ -244,7 +243,7 @@ async function loadBackupIfExists() {
       }
       console.log('✅ Backup data loaded successfully.');
     } catch (e) {
-      console.error('❌ Failed to parse db-backup.json. Falling back to hardcoded defaults.', e);
+      throw new Error('Invalid db-backup.json. No data was changed.', { cause: e });
     }
   } else {
     console.log(`\nℹ️ No db-backup.json found. Seeding with hardcoded defaults.`);
@@ -253,69 +252,16 @@ async function loadBackupIfExists() {
 }
 
 async function run() {
+  if (!process.argv.includes('--replace-existing')) throw new Error('This replaces content. Pass --replace-existing to continue.');
   await loadBackupIfExists();
 
-  console.log('Clearing existing Pricing...');
-  const pricingSnapshot = await db.collection('pricing').get();
-  for (const doc of pricingSnapshot.docs) {
-    await doc.ref.delete();
-  }
-
-  console.log('Seeding Pricing...');
-  for (const tier of pricingTiers) {
-    await db.collection('pricing').add(tier);
-  }
-
-  console.log('Clearing existing Portfolio...');
-  const portfolioSnapshot = await db.collection('portfolio').get();
-  for (const doc of portfolioSnapshot.docs) {
-    await doc.ref.delete();
-  }
-
-  console.log('Seeding Portfolio...');
-  for (const item of portfolioItems) {
-    await db.collection('portfolio').add(item);
-  }
-
-  console.log('Clearing existing Services...');
-  const servicesSnapshot = await db.collection('services').get();
-  for (const doc of servicesSnapshot.docs) {
-    await doc.ref.delete();
-  }
-
-  console.log('Seeding Services...');
-  for (const item of servicesItems) {
-    await db.collection('services').add(item);
-  }
-
-  console.log('Clearing existing Client Types...');
-  const clientTypesSnapshot = await db.collection('client_types').get();
-  for (const doc of clientTypesSnapshot.docs) {
-    await doc.ref.delete();
-  }
-
-  console.log('Seeding Client Types...');
-  for (const item of clientTypesItems) {
-    await db.collection('client_types').add(item);
-  }
-
-  console.log('Clearing existing Process...');
-  const processSnapshot = await db.collection('process').get();
-  for (const doc of processSnapshot.docs) {
-    await doc.ref.delete();
-  }
-
-  console.log('Seeding Process...');
-  for (const item of processItems) {
-    await db.collection('process').add(item);
-  }
-
-  console.log('Seeding Settings...');
-  await db.collection('settings').doc('general').set(generalSettings);
-  await db.collection('settings').doc('contact').set(contactSettings);
+  await replaceCollections(db, [
+    ['pricing', pricingTiers], ['portfolio', portfolioItems], ['services', servicesItems],
+    ['client_types', clientTypesItems.map(item => ({iconName:'User',...item}))], ['process', processItems],
+  ], {general:generalSettings,contact:contactSettings});
 
   console.log('Done!');
   process.exit(0);
 }
 
-run();
+run().catch(error => { console.error(error); process.exitCode = 1; });

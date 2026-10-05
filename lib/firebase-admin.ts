@@ -1,7 +1,7 @@
 import { decodeProtectedHeader, importX509, jwtVerify, type JWTPayload } from 'jose';
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
-type JsonObject = Record<string, JsonValue | undefined>;
+export type JsonObject = Record<string, JsonValue | undefined>;
 type FirestoreDocument = { name: string; fields?: Record<string, FirestoreValue> };
 type FirestoreValue = Record<string, unknown>;
 
@@ -19,6 +19,7 @@ const FIREBASE_CERTIFICATES_URL =
 const VALID_COLLECTIONS = new Set([
   'client_types',
   'leads',
+  'payments',
   'portfolio',
   'pricing',
   'process',
@@ -98,6 +99,7 @@ async function getServiceAccessToken(): Promise<string> {
   const assertion = `${unsignedToken}.${base64UrlEncode(new Uint8Array(signature))}`;
 
   const response = await fetch(GOOGLE_OAUTH_TOKEN_URL, {
+    signal: AbortSignal.timeout(15_000),
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -126,7 +128,7 @@ async function firestoreRequest(path: string, init: RequestInit = {}): Promise<R
   headers.set('Authorization', `Bearer ${accessToken}`);
   if (init.body) headers.set('Content-Type', 'application/json');
 
-  const response = await fetch(`${firestoreBasePath()}${path}`, { ...init, headers });
+  const response = await fetch(`${firestoreBasePath()}${path}`, { signal: AbortSignal.timeout(15_000), ...init, headers });
   if (!response.ok) {
     const message = await response.text();
     throw new Error(`Firestore request failed (${response.status}): ${message}`);
@@ -148,7 +150,7 @@ function toFirestoreValue(value: JsonValue | undefined): FirestoreValue {
   }
 
   const fields = Object.fromEntries(
-    Object.entries(value as { [key: string]: JsonValue }).map(([key, item]) => [key, toFirestoreValue(item)]),
+    Object.entries(value as { [key: string]: JsonValue }).filter(([, item]) => item !== undefined).map(([key, item]) => [key, toFirestoreValue(item)]),
   );
   return { mapValue: { fields } };
 }
@@ -191,10 +193,10 @@ function fromFirestoreDocument(document: FirestoreDocument): Record<string, Json
   const id = document.name.split('/').pop();
   if (!id) throw new Error('Firestore response did not include a document ID');
   return {
-    id,
     ...Object.fromEntries(
       Object.entries(document.fields ?? {}).map(([key, value]) => [key, fromFirestoreValue(value)]),
     ),
+    id,
   };
 }
 
@@ -213,6 +215,7 @@ class FirestoreDocumentSnapshot {
   data(): Record<string, JsonValue> | undefined {
     if (!this.document) return undefined;
     const { id: _id, ...data } = fromFirestoreDocument(this.document);
+    void _id;
     return data;
   }
 }
@@ -288,7 +291,7 @@ class FirestoreDocumentReference {
     const accessToken = await getServiceAccessToken();
     const response = await fetch(
       `${firestoreBasePath()}/documents/${this.collection}/${encodeURIComponent(this.id)}`,
-      { headers: { Authorization: `Bearer ${accessToken}` } },
+      { signal: AbortSignal.timeout(15_000), headers: { Authorization: `Bearer ${accessToken}` } },
     );
     if (response.status === 404) return new FirestoreDocumentSnapshot();
     if (!response.ok) throw new Error(`Firestore request failed (${response.status}): ${await response.text()}`);
@@ -355,7 +358,7 @@ export const db = {
 async function getFirebaseCertificates(): Promise<Record<string, string>> {
   if (certificateCache && certificateCache.expiresAt > Date.now()) return certificateCache.certificates;
 
-  const response = await fetch(FIREBASE_CERTIFICATES_URL);
+  const response = await fetch(FIREBASE_CERTIFICATES_URL, { signal: AbortSignal.timeout(15_000) });
   if (!response.ok) throw new Error('Unable to fetch Firebase token verification certificates');
 
   const cacheControl = response.headers.get('Cache-Control') ?? '';
@@ -385,7 +388,8 @@ export const adminAuth = {
       audience: projectId,
       issuer: `https://securetoken.google.com/${projectId}`,
     });
-    if (!payload.sub) throw new Error('Firebase ID token has no subject');
+    if (typeof payload.exp !== 'number' || typeof payload.iat !== 'number' || typeof payload.auth_time !== 'number' || payload.iat > Math.floor(Date.now() / 1000) || payload.auth_time > Math.floor(Date.now() / 1000)) throw new Error('Invalid Firebase ID token claims');
+    if (!payload.sub || payload.sub.length > 128) throw new Error('Firebase ID token has no subject');
 
     return {
       ...payload,

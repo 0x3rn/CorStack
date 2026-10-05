@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Corstack',
+  alternates: { canonical: '/terms' },
+  title: 'Terms of Service',
   description: 'Terms and conditions for using Corstack web design and development services.',
 };
 
@@ -37,7 +38,7 @@ export default function TermsOfServicePage() {
 
       <h2>4. Revisions</h2>
       <p>
-        Each package includes a specific number of revision rounds (e.g., 1 round for the Basic Package, 3 rounds for the Business Package). A "round" consists of a consolidated list of requested changes. Any major structural changes requested after the final approval of the design mockup may incur additional hourly billing.
+        Each package includes a specific number of revision rounds (e.g., 1 round for the Basic Package, 3 rounds for the Business Package). A &quot;round&quot; consists of a consolidated list of requested changes. Any major structural changes requested after the final approval of the design mockup may incur additional hourly billing.
       </p>
 
       <h2>5. Intellectual Property</h2>
@@ -52,7 +53,7 @@ export default function TermsOfServicePage() {
 
       <h2>7. Contact</h2>
       <p>
-        If you have any questions regarding these Terms of Service, please contact us at <a href="mailto:hello@corstack.com">hello@corstack.com</a>.
+        If you have any questions regarding these Terms of Service, please contact us at <a href="mailto:hello@corstack.dev">hello@corstack.dev</a>.
       </p>
     </section>
   );

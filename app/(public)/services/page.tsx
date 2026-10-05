@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Our Services | Corstack',
+  alternates: { canonical: '/services' },
+  title: 'Our Services',
   description: 'Comprehensive web solutions for modern brands, including Custom Web Design, E-Commerce, UI/UX Strategy, and Maintenance.',
 };
 

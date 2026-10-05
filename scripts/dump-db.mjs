@@ -19,9 +19,8 @@ async function dumpCollection(collectionName) {
   const snapshot = await db.collection(collectionName).get();
   const docs = [];
   snapshot.forEach(doc => {
-    // We omit the ID because we typically want to re-seed with fresh IDs or just clean data
     const data = doc.data();
-    docs.push(data);
+    docs.push({ ...data, id: doc.id });
   });
   return docs;
 }
@@ -41,6 +40,8 @@ async function run() {
   
   try {
     const backup = {
+      formatVersion: 1, projectId: serviceAccount.projectId, createdAt: new Date().toISOString(),
+      leads: await dumpCollection('leads'), payments: await dumpCollection('payments'),
       pricing: await dumpCollection('pricing'),
       portfolio: await dumpCollection('portfolio'),
       services: await dumpCollection('services'),

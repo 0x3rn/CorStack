@@ -11,12 +11,12 @@ interface ClientPricingProps {
 }
 
 export default function ClientPricing({ pricingTiers }: ClientPricingProps) {
-  const { currency, symbol, isCurrencyLoaded } = useCurrency();
+  const { currency, symbol } = useCurrency();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTier, setSelectedTier] = useState('');
 
   const handleBuyClick = (tier: string, priceText: string) => {
-    const formattedPrice = priceText.split('-')[0].trim().replace(/^[\$₦]/, '');
+    const formattedPrice = priceText.split('-')[0].trim().replace(/^[$₦]/, '');
     setSelectedTier(`${tier} (Starting from ${symbol}${formattedPrice})`);
     setIsModalOpen(true);
   };
@@ -32,7 +32,7 @@ export default function ClientPricing({ pricingTiers }: ClientPricingProps) {
               <p className="pricing-desc">{tier.desc}</p>
               <h4 id={`price-${tier.id}`} className="pricing-price">
                 <span className="block text-[0.85rem] font-extrabold tracking-[0.15em] uppercase mb-1 text-accent-primary">Starting from</span>
-                {symbol}{(currency === 'usd' ? tier.priceUsd : tier.priceNgn).split('-')[0].trim().replace(/^[\$₦]/, '')}
+                {symbol}{(currency === 'usd' ? tier.priceUsd : tier.priceNgn).split('-')[0].trim().replace(/^[$₦]/, '')}
               </h4>
               <ul className="pricing-features">
                 {tier.features.map((feature, idx) => (
@@ -51,17 +51,17 @@ export default function ClientPricing({ pricingTiers }: ClientPricingProps) {
           ))
         ) : (
           <div className="col-span-full text-center text-gray-500 py-12">
-            Pricing tiers will appear here once added in the admin dashboard.
+            Contact us for a tailored project quote.
           </div>
         )}
       </div>
 
-      <ProjectModal 
+      {isModalOpen && <ProjectModal
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
         tier={selectedTier} 
         currency={currency} 
-      />
+      />}
     </>
   );
 }

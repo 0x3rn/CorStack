@@ -13,7 +13,9 @@ const app = getApps().length === 0
 const db = getFirestore(app);
 
 async function clearPortfolio() {
+  if (!process.argv.includes('--replace-existing')) throw new Error('Pass --replace-existing to explicitly allow deleting existing data.');
   const snapshot = await db.collection('portfolio').get();
+  if (snapshot.size > 500) throw new Error('Too many records for an atomic deletion. No data was changed.');
   console.log(`Found ${snapshot.size} portfolio items. Deleting...`);
   
   const batch = db.batch();
@@ -25,4 +27,4 @@ async function clearPortfolio() {
   console.log('Portfolio collection cleared successfully.');
 }
 
-clearPortfolio().catch(console.error);
+clearPortfolio().catch(error => { console.error(error); process.exitCode = 1; });

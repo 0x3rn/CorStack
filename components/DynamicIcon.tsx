@@ -17,7 +17,7 @@ const toPascalCase = (str: string) => {
 
 export const DynamicIcon = ({ name, color, size, className }: IconProps) => {
   const formattedName = toPascalCase(name);
-  const LucideIcon = (icons as any)[formattedName] || (icons as any)[name];
+  const LucideIcon = icons[formattedName as keyof typeof icons] || icons[name as keyof typeof icons];
 
   if (!LucideIcon) {
     // Render a fallback icon if not found

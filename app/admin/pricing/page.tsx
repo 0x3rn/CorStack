@@ -1,9 +1,9 @@
 "use client";
+import { fetchJson } from "@/lib/client-http";
+import type { PublicContent } from "@/lib/types";
 
-import { useEffect, useState } from "react";
-import { auth } from "../../../lib/firebase";
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useCallback } from "react";
+import { useAdminAuth } from '@/components/AdminAuthProvider';
 import toast from "react-hot-toast";
 
 interface PricingTier {
@@ -18,8 +18,7 @@ interface PricingTier {
 }
 
 export default function AdminPricingPage() {
-  const [user, loading] = useAuthState(auth);
-  const router = useRouter();
+  const [user, loading] = useAdminAuth();
   const [tiers, setTiers] = useState<PricingTier[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   
@@ -27,30 +26,14 @@ export default function AdminPricingPage() {
   const [currentTier, setCurrentTier] = useState<PricingTier | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push("/admin/login");
-    } else if (user) {
-      if (process.env.NEXT_PUBLIC_ADMIN_EMAIL && user.email !== process.env.NEXT_PUBLIC_ADMIN_EMAIL) {
-        toast.error("Unauthorized access. You are not the admin.");
-        router.push("/");
-      } else {
-        fetchPricing();
-      }
-    }
-  }, [user, loading, router]);
 
-  const fetchPricing = async () => {
-    try {
-      const res = await fetch('/api/content');
-      const data = await res.json();
-      setTiers(data.pricing || []);
-    } catch (e) {
-      toast.error('Failed to fetch pricing');
-    } finally {
-      setIsFetching(false);
-    }
-  };
+
+  const fetchPricing = useCallback(() => fetchJson<PublicContent>('/api/content')
+    .then(data => setTiers(data.pricing))
+    .catch(() => toast.error('Failed to load pricing'))
+    .finally(() => setIsFetching(false)), []);
+
+  useEffect(() => { if (user) void fetchPricing(); }, [user, fetchPricing]);
 
   const handleEdit = (tier: PricingTier) => {
     setCurrentTier({ ...tier });
@@ -93,7 +76,7 @@ export default function AdminPricingPage() {
       toast.success('Saved successfully');
       setIsEditing(false);
       fetchPricing();
-    } catch (e) {
+    } catch {
       toast.error('Failed to save');
     } finally {
       setIsSaving(false);
@@ -117,7 +100,7 @@ export default function AdminPricingPage() {
       
       toast.success('Deleted successfully');
       fetchPricing();
-    } catch (e) {
+    } catch {
       toast.error('Failed to delete');
     }
   };
@@ -173,7 +156,7 @@ export default function AdminPricingPage() {
           <div>
             <label className="flex items-center gap-2 cursor-pointer font-semibold text-sm">
               <input type="checkbox" checked={currentTier.isPopular} onChange={e => setCurrentTier({...currentTier, isPopular: e.target.checked})} />
-              Mark as "Most Popular"
+              Mark as &quot;Most Popular&quot;
             </label>
           </div>
           

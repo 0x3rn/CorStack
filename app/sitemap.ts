@@ -1,24 +1,5 @@
-import { MetadataRoute } from 'next'
- 
+import type { MetadataRoute } from 'next';
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [
-    {
-      url: 'https://corstack.dev',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
-    },
-    {
-      url: 'https://corstack.dev/privacy',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-    {
-      url: 'https://corstack.dev/terms',
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.5,
-    },
-  ]
+  return ['', '/services', '/portfolio', '/privacy', '/terms'].map(path => ({ url: 'https://corstack.dev' + path,
+    changeFrequency: path === '' ? 'weekly' : 'monthly', priority: path === '' ? 1 : 0.5 }));
 }

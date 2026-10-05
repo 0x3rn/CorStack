@@ -1,3 +1,4 @@
+import { replaceCollections } from './data-safety.mjs';
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import fs from 'fs';
@@ -16,6 +17,7 @@ const app = getApps().length === 0 ? initializeApp({
 const db = getFirestore(app);
 
 async function run() {
+  if (!process.argv.includes('--replace-existing')) throw new Error('Pass --replace-existing to explicitly allow deleting existing data.');
   const backupPath = path.join(process.cwd(), 'scripts', 'db-backup.json');
   if (!fs.existsSync(backupPath)) {
     console.error('No backup found!');
@@ -23,6 +25,7 @@ async function run() {
   }
 
   const backupData = JSON.parse(fs.readFileSync(backupPath, 'utf8'));
+  if (backupData.projectId && backupData.projectId !== serviceAccount.projectId) throw new Error('Backup belongs to a different Firebase project.');
   const clientTypes = backupData.clientTypes;
 
   if (!clientTypes) {
@@ -30,19 +33,10 @@ async function run() {
     process.exit(1);
   }
 
-  console.log('Clearing existing Client Types...');
-  const clientTypesSnapshot = await db.collection('client_types').get();
-  for (const doc of clientTypesSnapshot.docs) {
-    await doc.ref.delete();
-  }
-
-  console.log('Seeding Client Types from backup...');
-  for (const item of clientTypes) {
-    await db.collection('client_types').add(item);
-  }
+  await replaceCollections(db, [['client_types', clientTypes.map(item => ({iconName:'User',...item}))]]);
 
   console.log('Done!');
   process.exit(0);
 }
 
-run();
+run().catch(error => { console.error(error); process.exitCode = 1; });

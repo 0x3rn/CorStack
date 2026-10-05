@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Corstack',
+  alternates: { canonical: '/privacy' },
+  title: 'Privacy Policy',
   description: 'Learn how Corstack collects, uses, and protects your information.',
 };
 
@@ -50,7 +51,7 @@ export default function PrivacyPolicyPage() {
 
       <h2>5. Your Rights</h2>
       <p>
-        You have the right to request access to the personal data we hold about you, request corrections, or ask us to delete your data entirely. To exercise these rights, please contact us at <a href="mailto:hello@corstack.com">hello@corstack.com</a>.
+        You have the right to request access to the personal data we hold about you, request corrections, or ask us to delete your data entirely. To exercise these rights, please contact us at <a href="mailto:hello@corstack.dev">hello@corstack.dev</a>.
       </p>
     </section>
   );

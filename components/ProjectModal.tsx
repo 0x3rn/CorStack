@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+
+const subscribeToHydration = () => () => {};
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -13,7 +15,8 @@ interface ProjectModalProps {
 }
 
 export default function ProjectModal({ isOpen, onClose, tier, currency }: ProjectModalProps) {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useSyncExternalStore(subscribeToHydration, () => true, () => false);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   
@@ -29,38 +32,30 @@ export default function ProjectModal({ isOpen, onClose, tier, currency }: Projec
   });
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!isOpen || !mounted) return;
+    const overflow = document.body.style.overflow;
+    const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.body.style.overflow = 'hidden';
+    const frame = requestAnimationFrame(() => dialogRef.current?.querySelector<HTMLElement>('input:not([readonly])')?.focus());
+    return () => { cancelAnimationFrame(frame); document.body.style.overflow = overflow; focused?.focus(); };
+  }, [isOpen, mounted]);
 
-  // Prevent scrolling on body when modal is open
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-    return () => {
-      document.body.style.overflow = 'unset';
+    if (!isOpen || !mounted) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !isSubmitting) onClose();
+      if (event.key !== 'Tab') return;
+      const controls = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])') || []).filter(control => control.getClientRects().length > 0);
+      if (!controls?.length) return;
+      const first = controls[0], last = controls[controls.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     };
-  }, [isOpen]);
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, mounted, isSubmitting, onClose]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setIsSubmitting(false);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        websiteType: "",
-        budget: "",
-        description: "",
-        contactMethod: "whatsapp",
-        otherContactDetails: ""
-      });
-    }
-  }, [isOpen]);
-
-  if (!mounted) return null;
+  if (!mounted || !isOpen) return null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -97,7 +92,7 @@ ${formData.description}
       } else {
         toast.error(result.message || "Something went wrong. Please try again.");
       }
-    } catch (error) {
+    } catch {
       toast.error("Error connecting to server. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -112,20 +107,21 @@ ${formData.description}
       data-lenis-prevent="true"
     >
       {/* Backdrop */}
-      <div className={`fixed inset-0 bg-brand-dark/80 backdrop-blur-[8px] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={onClose}></div>
+      <div className={`fixed inset-0 bg-brand-dark/80 backdrop-blur-[8px] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`} onClick={() => { if (!isSubmitting) onClose(); }}></div>
       
       {/* Scrollable Container Wrapper */}
       <div className="flex min-h-[100dvh] items-center justify-center p-3 sm:p-0 relative z-10">
         {/* Modal Container */}
-        <div 
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="project-dialog-title" tabIndex={-1}
           className={`bg-white rounded-xl shadow-[0_30px_60px_rgba(0,0,0,0.12)] w-full max-w-[650px] text-left transform transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col max-h-[95dvh] md:max-h-[90vh] ${isOpen ? 'translate-y-0 scale-100' : 'translate-y-12 scale-95'}`}
         >
               <div className="p-5 md:p-8 border-b border-black/[0.05] flex justify-between items-center shrink-0">
                 <div className="pr-4">
-                  <h3 className="text-xl md:text-2xl font-bold mb-1">Let's Discuss Your Website</h3>
+                  <h3 id="project-dialog-title" className="text-xl md:text-2xl font-bold mb-1">Let&apos;s Discuss Your Website</h3>
                   <p className="text-text-muted text-sm md:text-[0.95rem]">Fill out the details below to get started with the {tier}.</p>
                 </div>
                 <button 
+                  aria-label="Close project form"
                   onClick={onClose}
                   className="w-10 h-10 flex items-center justify-center rounded-full bg-black/5 hover:bg-black/10 text-gray-500 hover:text-black transition-colors self-start shrink-0"
                   disabled={isSubmitting}
@@ -213,8 +209,8 @@ ${formData.description}
                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${formData.contactMethod === method ? 'border-accent-primary' : 'border-gray-300 group-hover:border-accent-primary'}`}>
                           {formData.contactMethod === method && <div className="w-2.5 h-2.5 bg-accent-primary rounded-full"></div>}
                         </div>
-                        <input type="radio" name="contactMethod" value={method} checked={formData.contactMethod === method} onChange={(e) => setFormData({...formData, contactMethod: e.target.value})} className="hidden" />
-                        <span className="text-gray-700 capitalize font-medium">{method === 'phone' ? 'Phone Call' : method}</span>
+                        <input type="radio" name="contactMethod" value={method} checked={formData.contactMethod === method} onChange={(e) => setFormData({...formData, contactMethod: e.target.value})} className="sr-only peer" />
+                        <span className="text-gray-700 capitalize font-medium peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-accent-primary">{method === 'phone' ? 'Phone Call' : method}</span>
                       </label>
                     ))}
                   </div>

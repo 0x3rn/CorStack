@@ -67,3 +67,5 @@ export interface Settings {
     usdEmail: string;
   };
 }
+
+export interface PublicContent { pricing: PricingTier[]; portfolio: PortfolioItem[]; services: ServiceItem[]; clientTypes: ClientTypeItem[]; process: ProcessItem[]; settings: Settings; }
