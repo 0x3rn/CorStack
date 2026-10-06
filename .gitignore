@@ -37,7 +37,6 @@ yarn-error.log*
 .env.example*
 # vercel
 .vercel
-tests/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -57,3 +56,8 @@ backup.txt
 
 # Database exports contain private leads and payment records.
 /scripts/db-backup.json
+
+# Private migration exports and tooling state
+/migration-backups/
+/.neon
+/.neon/

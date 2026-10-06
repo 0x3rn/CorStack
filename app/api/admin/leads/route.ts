@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/db/neon';
 import { verifyAdmin } from '@/lib/admin';
 import { apiError, assertSameOrigin } from '@/lib/http';
 import { leadUpdateSchema, parseBody } from '@/lib/validation';

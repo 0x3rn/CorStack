@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db, type JsonObject } from './firebase-admin';
+import { db, type JsonObject } from './db/neon';
 import { verifyAdmin } from './admin';
 import { apiError, assertSameOrigin, readJson } from './http';
 import { documentId, parse } from './validation';

@@ -4,9 +4,8 @@ import type { PublicContent } from "@/lib/types";
 import Image from "next/image";
 
 import { useEffect, useState, useCallback } from "react";
-import { getFirebaseStorage } from '@/lib/firebase';
+import { uploadPortfolioImage } from '@/lib/upload';
 import { useAdminAuth } from '@/components/AdminAuthProvider';
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 
 import { PortfolioItem, PortfolioImage } from "../../../lib/types";
@@ -61,9 +60,10 @@ export default function AdminPortfolioPage() {
     setIsEditing(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'desktop' | 'mobile') => {
     const file = e.target.files?.[0];
-    if (!file || !currentItem || isUploading) return;
+    if (!file || !currentItem || !user || isUploading) return;
+    const input = e.target;
     
     const currentImages = type === 'desktop' ? (currentItem.desktopImages || []) : (currentItem.mobileImages || []);
     if (currentImages.length >= 5) {
@@ -75,38 +75,19 @@ export default function AdminPortfolioPage() {
       toast.error('Choose a PNG, JPEG, WebP, or AVIF image under 10 MB.');
       return;
     }
-    try {
-    const storageRef = ref(getFirebaseStorage(), `portfolio/${crypto.randomUUID()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
-
     setIsUploading(true);
-    uploadTask.on('state_changed', 
-      (snapshot) => {
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadProgress(progress);
-      }, 
-      () => {
-        toast.error("Image upload failed");
-        setIsUploading(false);
-      }, 
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          const field = type === 'desktop' ? 'desktopImages' : 'mobileImages';
-          setCurrentItem(item => item ? { ...item, [field]: [...(item[field] || []), { url: downloadURL, description: '' }].slice(0, 5) } : item);
-          toast.success('Image uploaded!');
-        } catch {
-          toast.error('Could not retrieve the uploaded image. Please try again.');
-        } finally {
-          setIsUploading(false);
-          setUploadProgress(0);
-          e.target.value = '';
-        }
-      }
-    );
-    } catch {
-      toast.error('Storage is unavailable. Check the Firebase configuration.');
+    setUploadProgress(0);
+    try {
+      const url = await uploadPortfolioImage(file, user, setUploadProgress);
+      const field = type === 'desktop' ? 'desktopImages' : 'mobileImages';
+      setCurrentItem(item => item ? { ...item, [field]: [...(item[field] || []), { url, description: '' }].slice(0, 5) } : item);
+      toast.success('Image uploaded!');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Image upload failed. Please try again.');
+    } finally {
       setIsUploading(false);
+      setUploadProgress(0);
+      input.value = '';
     }
   };
 

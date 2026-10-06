@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/db/neon';
 import { verifyAdmin } from '@/lib/admin';
 import { apiError, assertSameOrigin, readJson } from '@/lib/http';
 import { parse, generalSchema, contactSettingsSchema } from '@/lib/validation';

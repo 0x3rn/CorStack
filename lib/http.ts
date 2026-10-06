@@ -48,11 +48,37 @@ export async function readJson(request: Request, maxBytes = 32_768): Promise<unk
   catch { throw new HttpError(400, 'Invalid JSON.'); }
 }
 
+function getAllowedOrigins(): Set<string> {
+  const candidates = [
+    process.env.SITE_URL || 'https://corstack.dev',
+    'https://corstack.dev',
+    'https://web.corstack.dev',
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : []),
+  ];
+  const set = new Set<string>();
+  for (const item of candidates) {
+    const trimmed = item.trim();
+    if (!trimmed) continue;
+    try {
+      set.add(new URL(trimmed).origin);
+    } catch {
+      // Ignore malformed origin entries
+    }
+  }
+  return set;
+}
+
 export function assertSameOrigin(request: Request) {
   const origin = request.headers.get('origin');
   if (!origin) return;
-  const allowed = new Set([new URL(process.env.SITE_URL || 'https://corstack.dev').origin]);
-  if (process.env.NODE_ENV !== 'production') allowed.add(new URL(request.url).origin);
+  const allowed = getAllowedOrigins();
+  if (process.env.NODE_ENV !== 'production') {
+    try {
+      allowed.add(new URL(request.url).origin);
+    } catch {
+      // Ignore invalid request URL in test/dev
+    }
+  }
   if (!allowed.has(origin)) throw new HttpError(403, 'Request origin is not allowed.');
 }
 

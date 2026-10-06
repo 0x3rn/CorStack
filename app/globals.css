@@ -268,7 +268,7 @@
   }
 
   .portfolio-card {
-    @apply overflow-hidden bg-white cursor-pointer;
+    @apply overflow-hidden bg-white;
     border: 0;
   }
 
@@ -326,6 +326,16 @@
   .portfolio-mockup-image-scrollable {
     height: auto;
     min-height: 100%;
+  }
+
+  .portfolio-gallery-control {
+    @apply flex items-center justify-center w-7 h-7 rounded-full text-text-muted cursor-pointer transition-colors hover:bg-black/5 hover:text-accent-primary;
+  }
+
+  .portfolio-gallery-control:focus-visible,
+  .portfolio-mockup-viewport [role="region"]:focus-visible {
+    outline: 2px solid var(--color-accent-primary);
+    outline-offset: -2px;
   }
 
   .portfolio-info {

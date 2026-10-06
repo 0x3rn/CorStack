@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/db/neon';
 import { apiError, assertSameOrigin, escapeHtml, HttpError } from '@/lib/http';
 import { contactSchema, parseBody } from '@/lib/validation';
 import { enforceRateLimit } from '@/lib/rate-limit';

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/db/neon';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { apiError, HttpError } from '@/lib/http';
 export async function GET(request: Request) {

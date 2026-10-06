@@ -1,4 +1,4 @@
-import { db } from '../firebase-admin';
+import { db } from './neon';
 import type { PublicContent, Settings } from '../types';
 import { cache } from 'react';
 import { connection } from 'next/server';

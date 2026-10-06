@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { apiError, assertSameOrigin, HttpError } from '@/lib/http';
 import { parseBody } from '@/lib/validation';
 import { enforceRateLimit } from '@/lib/rate-limit';
-import { db } from '@/lib/firebase-admin';
+import { db } from '@/lib/db/neon';
 const checkoutSchema = z.object({ tier: z.enum(['basic', 'growth']), currency: z.enum(['ngn', 'usd']), email: z.email().max(254) }).strict();
 export async function POST(request: Request) {
   try {
