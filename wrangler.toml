@@ -3,6 +3,19 @@ main = ".open-next/worker.js"
 compatibility_date = "2026-09-08"
 compatibility_flags = ["nodejs_compat", "global_fetch_strictly_public"]
 
+[[routes]]
+pattern = "corstack.dev"
+custom_domain = true
+
+[[routes]]
+pattern = "web.corstack.dev"
+custom_domain = true
+
+# Intercept the existing proxied www hostname before its old Vercel origin.
+[[routes]]
+pattern = "www.corstack.dev/*"
+zone_name = "corstack.dev"
+
 [assets]
 directory = ".open-next/assets"
 binding = "ASSETS"

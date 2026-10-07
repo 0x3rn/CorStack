@@ -8,11 +8,12 @@ interface PortfolioSectionProps {
 }
 
 export default function PortfolioSection({ portfolio, isHome = false }: PortfolioSectionProps) {
+  const Heading = isHome ? 'h2' : 'h1';
   return (
     <section id="portfolio" className="portfolio-section">
       <div className="centered">
         <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Portfolio</span>
-        <h2 className="section-title">Selected Work</h2>
+        <Heading className="section-title">Selected Work</Heading>
         <p className="section-subtitle">Explore some of our recent projects and see how thoughtful design and development can transform an online presence.</p>
       </div>
       
