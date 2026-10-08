@@ -12,6 +12,8 @@ export interface PricingTier {
 export interface PortfolioImage {
   url: string;
   description?: string;
+  optimizedUrl?: string;
+  blurDataURL?: string;
 }
 
 export interface PortfolioItem {

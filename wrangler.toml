@@ -39,3 +39,6 @@ SITE_URL = "https://corstack.dev"
 [[r2_buckets]]
 binding = "PORTFOLIO_BUCKET"
 bucket_name = "corstack-media"
+
+[images]
+binding = "IMAGES"

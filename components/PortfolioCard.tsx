@@ -1,17 +1,41 @@
 "use client";
-import Image from "next/image";
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ExternalLink, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { PortfolioItem, PortfolioImage } from '../lib/types';
 
-function PortfolioSlide({ image, title, active, isHome, isMobileMockup }: { image: PortfolioImage, title: string, active: boolean, isHome?: boolean, isMobileMockup?: boolean }) {
+const hiddenDeviceImage = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+
+function PortfolioSlide({ image, title, active, loadImage, eager, onReady, isHome, isMobileMockup }: { image: PortfolioImage, title: string, active: boolean, loadImage: boolean, eager: boolean, onReady: () => void, isHome?: boolean, isMobileMockup?: boolean }) {
   const [isScrollingUI, setIsScrollingUI] = useState(false);
   const [canScroll, setCanScroll] = useState(false);
+  const [readySource, setReadySource] = useState('');
+  const [useOriginal, setUseOriginal] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const source = useOriginal ? image.url : image.optimizedUrl || image.url;
+  const ready = readySource === source;
+  const imageRef = useRef<HTMLImageElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const scrollDirectionRef = useRef<1 | -1>(1);
   const animationRef = useRef<number | null>(null);
   const isScrollingRef = useRef(false);
+
+  const revealImage = useCallback(async (img: HTMLImageElement) => {
+    const loadedSource = img.currentSrc;
+    if (!loadedSource || loadedSource.startsWith('data:')) return;
+    try { await img.decode(); } catch { return; }
+    if (!img.isConnected || img.currentSrc !== loadedSource) return;
+    setReadySource(source);
+    setFailed(false);
+    onReady();
+    const container = scrollContainerRef.current;
+    setCanScroll(Boolean(container && img.clientHeight > container.clientHeight));
+  }, [source, onReady]);
+
+  useEffect(() => {
+    const img = imageRef.current;
+    // Cached server-rendered images may finish before React attaches onLoad.
+    if (img?.complete && img.naturalWidth) void revealImage(img);
+  }, [loadImage, revealImage]);
 
   useEffect(() => {
     return () => {
@@ -133,6 +157,8 @@ function PortfolioSlide({ image, title, active, isHome, isMobileMockup }: { imag
 
   return (
     <div className="w-full h-full flex-shrink-0 snap-center relative" style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'none' }}>
+      {!ready && <div aria-hidden="true" className="portfolio-image-placeholder" style={image.blurDataURL ? { backgroundImage: `url("${image.blurDataURL}")` } : undefined} />}
+      {failed && <span role="status" className="absolute inset-0 z-30 flex items-center justify-center text-sm text-text-muted">Image preview unavailable</span>}
       <div 
         ref={scrollContainerRef}
         tabIndex={isHome || !active ? -1 : 0}
@@ -141,18 +167,24 @@ function PortfolioSlide({ image, title, active, isHome, isMobileMockup }: { imag
         className={`w-full h-full relative z-20 ${isHome ? 'overflow-hidden pointer-events-none' : 'overflow-y-auto cursor-ns-resize'} hide-scroll`}
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', overscrollBehavior: 'none' }}
       >
-        <Image unoptimized width={isMobileMockup ? 1200 : 1600} height={isMobileMockup ? 1600 : 1200}
-          src={image.url}
+        {loadImage && <picture className="contents">
+          {/* Browsers select a tiny source for the CSS-hidden device mockup. */}
+          <source media={isMobileMockup ? '(min-width: 768px)' : '(max-width: 767px)'} srcSet={hiddenDeviceImage} />
+          {/* Native load events also fire when a picture source changes at the device breakpoint. */}
+          <img ref={imageRef} width={isMobileMockup ? 1200 : 1600} height={isMobileMockup ? 1600 : 1200}
+          src={source}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
           alt={`${title} ${isMobileMockup ? 'mobile' : 'desktop'} preview${image.description ? ': ' + image.description : ''}`}
-          className={`portfolio-mockup-image select-none pointer-events-none ${isHome ? "" : "portfolio-mockup-image-scrollable"}`}
-          onLoad={(e) => {
-            const img = e.target as HTMLImageElement;
-            const container = scrollContainerRef.current;
-            if (container && img.clientHeight > container.clientHeight) {
-              setCanScroll(true);
-            }
+          className={`portfolio-mockup-image portfolio-image-reveal select-none pointer-events-none ${isHome ? "" : "portfolio-mockup-image-scrollable"}`}
+          style={{ opacity: ready ? 1 : 0 }}
+          onLoad={(e) => { void revealImage(e.currentTarget); }}
+          onError={() => {
+            if (!useOriginal && image.optimizedUrl && image.optimizedUrl !== image.url) setUseOriginal(true);
+            else setFailed(true);
           }}
         />
+        </picture>}
       </div>
       
       {canScroll && !isHome && (
@@ -175,7 +207,27 @@ function PortfolioSlide({ image, title, active, isHome, isMobileMockup }: { imag
 function CarouselWrapper({ images, title, isHome, isMobileMockup }: { images: PortfolioImage[], title: string, isHome?: boolean, isMobileMockup?: boolean }) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [warmed, setWarmed] = useState<number[]>([0]);
+  const [readyIndices, setReadyIndices] = useState<number[]>([]);
+  const [nearViewport, setNearViewport] = useState(false);
   const hasControls = !isHome && images.length > 1;
+
+  useEffect(() => {
+    const element = carouselRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(([entry]) => setNearViewport(entry.isIntersecting), { rootMargin: '200px 0px' });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!nearViewport || !readyIndices.includes(activeIndex) || images.length < 2) return;
+    // Warm only the next slide, after the current image has decoded. Distant
+    // cards and the hidden device mockup do not download their whole galleries.
+    const next = (activeIndex + 1) % images.length;
+    const timer = window.setTimeout(() => setWarmed(previous => previous.includes(next) ? previous : [...previous, next]), 400);
+    return () => window.clearTimeout(timer);
+  }, [nearViewport, readyIndices, activeIndex, images.length]);
 
   const handleScroll = () => {
     const container = carouselRef.current;
@@ -217,7 +269,9 @@ function CarouselWrapper({ images, title, isHome, isMobileMockup }: { images: Po
         <div className="portfolio-mockup-viewport">
           <div ref={carouselRef} onScroll={handleScroll} className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory no-scrollbar z-20" style={{ overscrollBehaviorX: 'contain' }}>
             {images.map((image, index) => (
-              <PortfolioSlide key={`${index}:${image.url}`} image={image} title={title} active={activeIndex === index} isHome={isHome} isMobileMockup={isMobileMockup} />
+              <PortfolioSlide key={`${index}:${image.url}:${image.optimizedUrl || ''}`} image={image} title={title} active={activeIndex === index}
+                loadImage={index === activeIndex || warmed.includes(index)} eager={nearViewport && (index === activeIndex || warmed.includes(index))}
+                onReady={() => setReadyIndices(previous => previous.includes(index) ? previous : [...previous, index])} isHome={isHome} isMobileMockup={isMobileMockup} />
             ))}
           </div>
           {!isHome && images[activeIndex]?.description && (

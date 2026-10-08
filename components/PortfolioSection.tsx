@@ -1,16 +1,19 @@
 import Link from 'next/link';
 import PortfolioCard from './PortfolioCard';
 import { PortfolioItem } from '../lib/types';
+import { enrichPortfolioImages } from '../lib/image-optimization';
 
 interface PortfolioSectionProps {
   portfolio: PortfolioItem[];
   isHome?: boolean;
 }
 
-export default function PortfolioSection({ portfolio, isHome = false }: PortfolioSectionProps) {
+export default async function PortfolioSection({ portfolio, isHome = false }: PortfolioSectionProps) {
+  const images = await enrichPortfolioImages(portfolio);
   const Heading = isHome ? 'h2' : 'h1';
   return (
     <section id="portfolio" className="portfolio-section">
+      <noscript><style>{'.portfolio-image-reveal{opacity:1!important}.portfolio-image-placeholder{display:none}'}</style></noscript>
       <div className="centered">
         <span className="hero-eyebrow" style={{ display: 'block', marginBottom: '1rem' }}>Portfolio</span>
         <Heading className="section-title">Selected Work</Heading>
@@ -19,7 +22,7 @@ export default function PortfolioSection({ portfolio, isHome = false }: Portfoli
       
       <div className="portfolio-grid mt-12">
         {portfolio && portfolio.length > 0 ? (
-          portfolio.map(item => (
+          images.map(item => (
             <PortfolioCard key={item.id} item={item} isHome={isHome} />
           ))
         ) : (

@@ -11,12 +11,13 @@
     "preview": "npm run cloudflare:build && opennextjs-cloudflare preview",
     "deploy": "npm run cloudflare:build && opennextjs-cloudflare deploy",
     "typecheck": "next typegen && tsc --noEmit",
-    "test": "tsx --test tests/*.test.ts",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
     "check": "npm run lint && npm run typecheck && npm test",
     "db:migrate": "tsx --env-file=.env.local scripts/db-migrate.ts",
     "migration": "tsx --env-file=.env.local scripts/migrate-data.ts",
     "db:backup": "tsx --env-file=.env.local scripts/dump-db.mjs",
-    "db:seed": "tsx --env-file=.env.local scripts/seed-db.mjs"
+    "db:seed": "tsx --env-file=.env.local scripts/seed-db.mjs",
+    "media:optimize": "tsx --env-file=.env.local scripts/optimize-portfolio-images.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
@@ -48,6 +49,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^16",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "tsx": "^4",
     "typescript": "^5",

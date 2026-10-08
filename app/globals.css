@@ -328,6 +328,22 @@
     min-height: 100%;
   }
 
+  .portfolio-image-placeholder {
+    position: absolute;
+    inset: 0;
+    background-color: #e8edf2;
+    background-size: cover;
+    background-position: top center;
+    filter: blur(10px);
+    transform: scale(1.03);
+    pointer-events: none;
+  }
+
+  .portfolio-image-reveal { transition: opacity 200ms ease; }
+  @media (prefers-reduced-motion: reduce) {
+    .portfolio-image-reveal { transition: none; }
+  }
+
   .portfolio-gallery-control {
     @apply flex items-center justify-center w-7 h-7 rounded-full text-text-muted cursor-pointer transition-colors hover:bg-black/5 hover:text-accent-primary;
   }

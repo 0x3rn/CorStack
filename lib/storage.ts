@@ -3,7 +3,7 @@ import { HttpError } from './http';
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const extensions: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/avif': 'avif' };
 export const mediaFilename = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[0-9a-f]{64})\.(?:png|jpg|webp|avif)$/;
-type StoredImage = { body: ReadableStream<Uint8Array>; httpEtag: string; writeHttpMetadata(headers: Headers): void };
+export type StoredImage = { body: ReadableStream<Uint8Array>; httpEtag: string; writeHttpMetadata(headers: Headers): void; text(): Promise<string> };
 export type PortfolioBucket = {
   put(key: string, value: Uint8Array, options: { httpMetadata: { contentType: string; cacheControl: string }; customMetadata: Record<string, string> }): Promise<unknown>;
   get(key: string): Promise<StoredImage | null>;

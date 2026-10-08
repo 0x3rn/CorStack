@@ -1,6 +1,7 @@
 import { verifyAdmin } from '@/lib/admin';
 import { apiError, assertSameOrigin } from '@/lib/http';
 import { getPortfolioBucket, readImage } from '@/lib/storage';
+import { getImagesBinding, optimizeUploadedImage } from '@/lib/image-optimization';
 
 export async function POST(request: Request) {
   try {
@@ -13,6 +14,11 @@ export async function POST(request: Request) {
       httpMetadata: { contentType, cacheControl: 'public, max-age=31536000, immutable' },
       customMetadata: { uploadedBy: user.uid },
     });
+    const images = await getImagesBinding();
+    if (images) {
+      try { await optimizeUploadedImage(bucket, filename, bytes, images); }
+      catch { console.warn('Portfolio optimization unavailable; the original upload was preserved.'); }
+    }
     return Response.json({ url: `/media/portfolio/${filename}` }, { status: 201, headers: { 'Cache-Control': 'private, no-store' } });
   } catch (error) { return apiError(error); }
 }

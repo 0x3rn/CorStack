@@ -120,7 +120,7 @@ function load(file: string, dependencies: Record<string, unknown>) {
   vm.runInNewContext(compiled, { module: loaded, exports: loaded.exports, require: (id: string) => {
     if (!(id in dependencies)) throw new Error('Unexpected dependency: ' + id);
     return dependencies[id];
-  }, Response, Request, Headers, crypto, console: { error() {} } });
+  }, Response, Request, Headers, crypto, console: { error() {}, warn() {} } });
   return loaded.exports;
 }
 const png = new Uint8Array([137,80,78,71,13,10,26,10,0,0,0,0]);
@@ -130,6 +130,7 @@ test('R2 uploads authenticate before storage access and return a safe same-origi
     '@/lib/admin': { verifyAdmin: async () => ({ uid: 'admin-uid' }) },
     '@/lib/http': { apiError, assertSameOrigin },
     '@/lib/storage': { readImage, getPortfolioBucket: async () => ({ put: async (key: string, bytes: Uint8Array, options: unknown) => saved.push({ key, bytes, options }) }) },
+    '@/lib/image-optimization': { getImagesBinding: async () => undefined },
   };
   const request = () => new Request('https://corstack.dev/api/admin/uploads', { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: png });
   const forbidden = load('app/api/admin/uploads/route.ts', { ...dependencies, '@/lib/admin': { verifyAdmin: async () => { throw new HttpError(403, 'Not authorized'); } } });
@@ -143,6 +144,12 @@ test('R2 uploads authenticate before storage access and return a safe same-origi
   assert.equal(saved[0].key, result.url.slice('/media/'.length));
   assert.deepEqual(saved[0].bytes, png);
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  const outage = load('app/api/admin/uploads/route.ts', { ...dependencies, '@/lib/image-optimization': {
+    getImagesBinding: async () => ({}), optimizeUploadedImage: async () => { throw new Error('Encoder unavailable'); },
+  } });
+  const preserved = await outage.POST(request());
+  assert.equal(preserved.status, 201);
+  assert.deepEqual(saved[1].bytes, png);
 });
 test('upload validation rejects fake images and bounds bodies without trusting Content-Length', async () => {
   assert.throws(() => validateImage(new TextEncoder().encode('<script>bad</script>'), 'image/png'), /contents/);
